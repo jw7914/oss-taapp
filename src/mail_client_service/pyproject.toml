@@ -1,0 +1,10 @@
+[project]
+name = "mail_client_service"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "gmail_message_impl",
+    "gmail_client_impl"
+]
