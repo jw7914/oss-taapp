@@ -129,6 +129,35 @@ def delete_message_by_id(message_id: str) -> JSONResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+@app.post("/messages/{message_id}/mark-as-read")
+def mark_message_as_read(message_id: str) -> JSONResponse:
+    """Mark a specific Gmail message as read by its ID."""
+    if not hasattr(app.state, "client") or app.state.client is None:
+        return JSONResponse(
+            content={"error": "Client not authenticated. Please log in first."},
+            status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        # Mark the specific message as read by ID
+        success = app.state.client.mark_as_read(message_id)
+        
+        if success:
+            return JSONResponse(
+                content={"message": f"Message {message_id} marked as read successfully."},
+                status_code=status.HTTP_200_OK
+            )
+        
+        return JSONResponse(
+            content={"error": f"Failed to mark message {message_id} as read. Message may not exist or operation not supported."},
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return JSONResponse(
+            content={"error": f"Failed to mark message {message_id} as read: {e!s}"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
