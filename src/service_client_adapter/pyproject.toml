@@ -1,0 +1,36 @@
+[project]
+name = "service_client_adapter"
+version = "0.1.0"
+description = "Server adapter for generated client"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.5.0",
+    "python-multipart>=0.0.6",
+    # Workspace dependencies
+    "mail-client-api",
+    "fast-api-client"
+]
+
+[tool.uv.sources]
+mail-client-api = { workspace = true }
+fast-api-client = { workspace = true }
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.1",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.25.0",
+    "pytest-cov>=6.2.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+

@@ -3,7 +3,6 @@ from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 
 import gmail_client_impl  # noqa: F401
-import gmail_message_impl  # noqa: F401
 import mail_client_api
 
 app = FastAPI()
@@ -157,7 +156,5 @@ def mark_message_as_read(message_id: str) -> JSONResponse:
             content={"error": f"Failed to mark message {message_id} as read: {e!s}"},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-
-
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
