@@ -1,9 +1,10 @@
 from collections.abc import Iterator
 import json
 
-from fast_api_client import Client
+from mail_client_service_api_client import Client
 
-from fast_api_client.api.default import login, get_messages, get_message_by_id, delete_message, mark_message_as_read
+from mail_client_service_api_client.api.authentication import *
+from mail_client_service_api_client.api.messages import *
 from mail_client_api.message import Message
 
 import mail_client_api
@@ -55,8 +56,3 @@ class ServiceClientAdapter(mail_client_api.Client):
         content = json.loads(messages.content)
         max_results = min(max_results,len(content['messages']))
         return content['messages'][:max_results]
-    
-if __name__ == "__main__":
-    adapter = ServiceClientAdapter()
-    adapter.login()
-    print(adapter.get_messages(3))

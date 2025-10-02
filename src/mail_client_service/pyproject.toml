@@ -1,38 +1,65 @@
 [project]
 name = "mail-client-service"
 version = "0.1.0"
-description = "FastAPI service for mail client operations"
+description = "FastAPI-based Gmail client service providing authentication and mail management endpoints"
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi[standard]>=0.104.1",
+    "fastapi[standard]>=0.104.0",
     "uvicorn[standard]>=0.24.0",
-    "pydantic>=2.5.0",
-    "python-multipart>=0.0.6",
-    # Workspace dependencies
     "mail-client-api",
     "gmail-client-impl",
-    "gmail-message-impl",
 ]
 
 [tool.uv.sources]
 mail-client-api = { workspace = true }
 gmail-client-impl = { workspace = true }
-gmail-message-impl = { workspace = true }
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.4.1",
-    "pytest-asyncio>=0.21.0",
-    "httpx>=0.25.0",
     "pytest-cov>=6.2.1",
+    "httpx>=0.25.0",  # For testing FastAPI endpoints
+    "pytest-asyncio>=0.21.0",
+    "mypy>=1.17.0",
+    "ruff>=0.12.7",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]
-asyncio_mode = "auto"
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
+[tool.hatch.build]
+directory = "dist"
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+src = ["src", "tests"]
+
+
+[tool.mypy]
+strict = true
+explicit_package_bases = true
+mypy_path = ["src"]
+ignore_missing_imports = false
+
+[[tool.mypy.overrides]]
+module = [
+    "mail_client_api.*",
+    "gmail_client_impl.*",
+    "fastapi.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+pythonpath = [".", "src"]
+testpaths = ["tests"]
+addopts = ["--cov", "--cov-report=term-missing", "--import-mode=importlib"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*"]

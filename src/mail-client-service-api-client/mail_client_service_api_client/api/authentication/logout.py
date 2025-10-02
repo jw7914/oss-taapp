@@ -11,7 +11,7 @@ from ...types import Response
 def _get_kwargs() -> dict[str, Any]:
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/login",
+        "url": "/logout",
     }
 
     return _kwargs
@@ -40,9 +40,9 @@ def sync_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Response[Any]:
-    """Login
+    """Logout Gmail Account
 
-     Checks and returns the authentication status of the user's Gmail account.
+     Logout the authenticated Gmail account by clearing the client from app state.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -65,9 +65,9 @@ async def asyncio_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Response[Any]:
-    """Login
+    """Logout Gmail Account
 
-     Checks and returns the authentication status of the user's Gmail account.
+     Logout the authenticated Gmail account by clearing the client from app state.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

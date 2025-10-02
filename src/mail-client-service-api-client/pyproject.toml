@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "fast-api-client"
-version = "0.1.0"
-description = "A client library for accessing FastAPI"
+name = "mail-client-service-api-client"
+version = "1.0.0"
+description = "A client library for accessing Mail Client Service API"
 authors = []
 readme = "README.md"
 packages = [
-    { include = "fast_api_client" },
+    { include = "mail_client_service_api_client" },
 ]
-include = ["CHANGELOG.md", "fast_api_client/py.typed"]
+include = ["CHANGELOG.md", "mail_client_service_api_client/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.9"

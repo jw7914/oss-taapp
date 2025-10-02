@@ -6,15 +6,23 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...types import Response
+from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
-    message_id: str,
+    *,
+    interactive: Union[Unset, bool] = False,
 ) -> dict[str, Any]:
+    params: dict[str, Any] = {}
+
+    params["interactive"] = interactive
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": f"/messages/{message_id}/mark-as-read",
+        "method": "get",
+        "url": "/login",
+        "params": params,
     }
 
     return _kwargs
@@ -50,16 +58,26 @@ def _build_response(
 
 
 def sync_detailed(
-    message_id: str,
     *,
     client: Union[AuthenticatedClient, Client],
+    interactive: Union[Unset, bool] = False,
 ) -> Response[Union[Any, HTTPValidationError]]:
-    """Mark Message As Read
+    """Authenticate Gmail Account
 
-     Mark a specific Gmail message as read by its ID.
+     Authenticate the user's Gmail account.
 
     Args:
-        message_id (str):
+        interactive (bool): Whether to use interactive authentication.
+
+    Returns:
+        JSONResponse: Success message if authenticated, error details if failed.
+
+    Raises:
+        HTTPException: 500 if authentication fails, 409 if already authenticated.
+
+    Args:
+        interactive (Union[Unset, bool]): Whether to use interactive authentication Default:
+            False.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -70,7 +88,7 @@ def sync_detailed(
     """
 
     kwargs = _get_kwargs(
-        message_id=message_id,
+        interactive=interactive,
     )
 
     response = client.get_httpx_client().request(
@@ -81,16 +99,26 @@ def sync_detailed(
 
 
 def sync(
-    message_id: str,
     *,
     client: Union[AuthenticatedClient, Client],
+    interactive: Union[Unset, bool] = False,
 ) -> Optional[Union[Any, HTTPValidationError]]:
-    """Mark Message As Read
+    """Authenticate Gmail Account
 
-     Mark a specific Gmail message as read by its ID.
+     Authenticate the user's Gmail account.
 
     Args:
-        message_id (str):
+        interactive (bool): Whether to use interactive authentication.
+
+    Returns:
+        JSONResponse: Success message if authenticated, error details if failed.
+
+    Raises:
+        HTTPException: 500 if authentication fails, 409 if already authenticated.
+
+    Args:
+        interactive (Union[Unset, bool]): Whether to use interactive authentication Default:
+            False.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -101,22 +129,32 @@ def sync(
     """
 
     return sync_detailed(
-        message_id=message_id,
         client=client,
+        interactive=interactive,
     ).parsed
 
 
 async def asyncio_detailed(
-    message_id: str,
     *,
     client: Union[AuthenticatedClient, Client],
+    interactive: Union[Unset, bool] = False,
 ) -> Response[Union[Any, HTTPValidationError]]:
-    """Mark Message As Read
+    """Authenticate Gmail Account
 
-     Mark a specific Gmail message as read by its ID.
+     Authenticate the user's Gmail account.
 
     Args:
-        message_id (str):
+        interactive (bool): Whether to use interactive authentication.
+
+    Returns:
+        JSONResponse: Success message if authenticated, error details if failed.
+
+    Raises:
+        HTTPException: 500 if authentication fails, 409 if already authenticated.
+
+    Args:
+        interactive (Union[Unset, bool]): Whether to use interactive authentication Default:
+            False.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -127,7 +165,7 @@ async def asyncio_detailed(
     """
 
     kwargs = _get_kwargs(
-        message_id=message_id,
+        interactive=interactive,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -136,16 +174,26 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    message_id: str,
     *,
     client: Union[AuthenticatedClient, Client],
+    interactive: Union[Unset, bool] = False,
 ) -> Optional[Union[Any, HTTPValidationError]]:
-    """Mark Message As Read
+    """Authenticate Gmail Account
 
-     Mark a specific Gmail message as read by its ID.
+     Authenticate the user's Gmail account.
 
     Args:
-        message_id (str):
+        interactive (bool): Whether to use interactive authentication.
+
+    Returns:
+        JSONResponse: Success message if authenticated, error details if failed.
+
+    Raises:
+        HTTPException: 500 if authentication fails, 409 if already authenticated.
+
+    Args:
+        interactive (Union[Unset, bool]): Whether to use interactive authentication Default:
+            False.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -157,7 +205,7 @@ async def asyncio(
 
     return (
         await asyncio_detailed(
-            message_id=message_id,
             client=client,
+            interactive=interactive,
         )
     ).parsed

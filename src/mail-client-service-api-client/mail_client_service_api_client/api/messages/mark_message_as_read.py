@@ -13,8 +13,8 @@ def _get_kwargs(
     message_id: str,
 ) -> dict[str, Any]:
     _kwargs: dict[str, Any] = {
-        "method": "get",
-        "url": f"/messages/{message_id}",
+        "method": "post",
+        "url": f"/messages/{message_id}/mark-as-read",
     }
 
     return _kwargs
@@ -54,9 +54,9 @@ def sync_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Response[Union[Any, HTTPValidationError]]:
-    """Get Message By Id
+    """Mark Message as Read
 
-     Retrieve a specific Gmail message by its ID.
+     Mark a specific message as read by its ID
 
     Args:
         message_id (str):
@@ -85,9 +85,9 @@ def sync(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Optional[Union[Any, HTTPValidationError]]:
-    """Get Message By Id
+    """Mark Message as Read
 
-     Retrieve a specific Gmail message by its ID.
+     Mark a specific message as read by its ID
 
     Args:
         message_id (str):
@@ -111,9 +111,9 @@ async def asyncio_detailed(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Response[Union[Any, HTTPValidationError]]:
-    """Get Message By Id
+    """Mark Message as Read
 
-     Retrieve a specific Gmail message by its ID.
+     Mark a specific message as read by its ID
 
     Args:
         message_id (str):
@@ -140,9 +140,9 @@ async def asyncio(
     *,
     client: Union[AuthenticatedClient, Client],
 ) -> Optional[Union[Any, HTTPValidationError]]:
-    """Get Message By Id
+    """Mark Message as Read
 
-     Retrieve a specific Gmail message by its ID.
+     Mark a specific message as read by its ID
 
     Args:
         message_id (str):
