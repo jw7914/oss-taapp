@@ -38,9 +38,8 @@ def test_messages_require_authentication() -> None:
     resp = client.get("/messages")
     assert resp.status_code == 401
     body = resp.json()
-    # ensure the error shape matches the API contract
-    assert "detail" in body
-    assert body["detail"]["error"] == "Not authenticated"
+    assert "error" in body
+    assert body["error"] == "Not authenticated"
 
 
 def test_login_and_get_messages(monkeypatch:pytest.MonkeyPatch) -> None:
