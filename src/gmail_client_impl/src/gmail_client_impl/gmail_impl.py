@@ -123,51 +123,11 @@ class GmailClient(Client):
         This method launches a local web server to handle the OAuth2 flow,
         opening the user's browser to complete authentication with Google.
         """
-        # Try multiple candidate locations for the credentials file. The
-        # code may be executed with a working directory different from the
-        # repository root (for example when running the FastAPI service), so
-        # check a few likely places before giving up.
-        candidates: list[Path] = []
-
-        # If the provided path is absolute, check it directly first.
-        provided = Path(creds_path)
-        if provided.is_absolute():
-            candidates.append(provided)
-        else:
-            # Check relative to current working directory
-            candidates.append(Path.cwd() / creds_path)
-            # Check relative to this module's package directory and several
-            # of its parents (covers nested src/ layouts)
-            module_dir = Path(__file__).resolve().parent
-            candidates.append(module_dir / creds_path)
-            candidates.extend(parent / creds_path for parent in module_dir.parents[:6])
-
-        # Deduplicate while preserving order
-        seen = set()
-        final_candidates: list[Path] = []
-        for p in candidates:
-            try:
-                rp = p.resolve()
-            except (FileNotFoundError, OSError):
-                rp = p
-            if rp in seen:
-                continue
-            seen.add(rp)
-            final_candidates.append(rp)
-
-        found_path: Path | None = None
-        for p in final_candidates:
-            if p.exists():
-                found_path = p
-                break
-
-        if not found_path:
-            attempted = ", ".join(str(p) for p in final_candidates[:10])
-            msg = f"'{creds_path}' not found. Tried: {attempted}. Cannot run interactive auth."
-            raise FileNotFoundError(msg)
+        if not Path(creds_path).exists():
+            raise FileNotFoundError(f"'{creds_path}' not found. Cannot run interactive auth.")  # noqa: EM102 TRY003
 
         flow = InstalledAppFlow.from_client_secrets_file(
-            str(found_path),
+            creds_path,
             self.SCOPES,
         )
         return flow.run_local_server(port=0)  # type: ignore[no-any-return]
