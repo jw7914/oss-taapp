@@ -30,7 +30,7 @@ def root() -> dict[str, str]:
     return {"message": "Welcome to Mail Client Service!"}
 
 @app.get("/login", tags=["Authentication"], summary="Authenticate Gmail Account")
-def login(interactive: bool = Query(True, description="Whether to use interactive authentication")) -> JSONResponse:
+def login(interactive: bool = Query(False, description="Whether to use interactive authentication")) -> JSONResponse:
     """Authenticate the user's Gmail account.
 
     Args:
@@ -64,7 +64,7 @@ def login(interactive: bool = Query(True, description="Whether to use interactiv
             )
         app.state.auth_in_progress = True
         try:
-            client = mail_client_api.get_client(interactive=interactive)
+            client = mail_client_api.get_client(interactive: bool=interactive)
         finally:
             app.state.auth_in_progress = False
 
@@ -414,4 +414,3 @@ def delete_message(message_id: str) -> JSONResponse:
                 "status": "error",
             },
         ) from e
-        

@@ -10,12 +10,8 @@ dependencies = [
     "python-multipart>=0.0.6",
     # Workspace dependencies
     "mail-client-api",
-    "fast-api-client"
+    "mail_client_service_api_client"
 ]
-
-[tool.uv.sources]
-mail-client-api = { workspace = true }
-fast-api-client = { workspace = true }
 
 [project.optional-dependencies]
 dev = [
@@ -25,12 +21,28 @@ dev = [
     "pytest-cov>=6.2.1",
 ]
 
+[tool.mypy]
+strict = true
+explicit_package_bases = true
+mypy_path = "src"
+ignore_missing_imports = false
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/service_client_adapter"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/service_client_adapter/py.typed" = "service_client_adapter/py.typed"
+    
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [".","src"]
 testpaths = ["tests"]
-asyncio_mode = "auto"
+
+[tool.uv.sources]
+mail-client-api = { workspace = true }
+mail-client-service-api-client = { workspace = true }
+
 

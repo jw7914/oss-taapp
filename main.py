@@ -13,6 +13,12 @@ import mail_client_api
 # run and override the factory functions in the protocol packages.
 
 
+# Import the protocols first
+# --- TRIGGER DEPENDENCY INJECTION ---
+# By importing the implementation packages, their __init__.py files
+# run and override the factory functions in the protocol packages.
+
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

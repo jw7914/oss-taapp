@@ -1,153 +1,199 @@
 # Mail Client Service
 
-A FastAPI-based REST API service that provides HTTP endpoints for mail operations using the existing mail client components.
+A FastAPI-based Gmail client service that provides HTTP endpoints for Gmail authentication and message management operations.
 
 ## Overview
 
-This service acts as a thin wrapper around the existing `gmail_client_impl` and `gmail_message_impl` components, exposing their functionality via RESTful HTTP endpoints.
+The Mail Client Service is a REST API wrapper around the Gmail client implementation, providing a web interface for managing Gmail messages. It offers secure authentication and comprehensive message operations through clean HTTP endpoints.
 
 ## Features
 
-- **RESTful API**: Clean HTTP endpoints for mail operations
-- **Automatic Documentation**: Interactive API docs via FastAPI
-- **Dependency Injection**: Uses FastAPI's dependency system for client management
-- **Error Handling**: Comprehensive error responses with proper HTTP status codes
-- **Type Safety**: Full Pydantic model validation for requests and responses
+- **Gmail Authentication**: OAuth2-based Gmail account authentication with interactive login flow
+- **Message Listing**: Retrieve multiple messages with configurable limits
+- **Message Details**: Get full details of individual messages by ID
+- **Mark as Read**: Mark specific messages as read
+- **Message Deletion**: Delete messages from Gmail account
+- **Error Handling**: Comprehensive error responses with detailed status information
+- **State Management**: Persistent authentication state during application lifecycle
 
 ## API Endpoints
 
-### Health & Status
+### Authentication
 
-- `GET /` - Service information and status
-- `GET /health` - Health check endpoint
+- `GET /login` - Authenticate Gmail account with OAuth2 flow
+  - Supports `interactive` query parameter:
+    - `GET /login?interactive=true` - Initiate interactive browser-based authentication
+- `GET /logout` - Revoke authentication and log out the current Gmail account
 
 ### Messages
 
-- `GET /messages` - Get a list of message summaries
-  - Query param: `max_results` (1-100, default: 10)
-- `GET /messages/{message_id}` - Get full details of a specific message
-- `POST /messages/{message_id}/mark-read` - Mark a message as read
-- `DELETE /messages/{message_id}` - Delete a message
-- `GET /messages/{message_id}/exists` - Check if a message exists
+- `GET /messages` - List messages (supports `max_results` query parameter, 1-100, default: 3)
+- `GET /messages/{id}` - Get detailed information for a specific message
+- `POST /messages/{id}/mark-as-read` - Mark a message as read
+- `DELETE /messages/{id}` - Delete a message
 
-## Quick Start
+### General
 
-### 1. Install Dependencies
+- `GET /` - Welcome message and service status
 
-From the workspace root:
+## Installation
+
+### Prerequisites
+
+- Python 3.11 or higher
+- Gmail API credentials (`credentials.json`)
+
+### Setup
+
+1. Install the package and its dependencies:
 
 ```bash
-uv sync --extra dev
+uv sync --all-packages --extra dev
 ```
 
-### 2. Run the Service
+2. Set up Gmail API credentials:
+   - Place your `credentials.json` file in the project root
+
+## Usage
+
+### Starting the Service
 
 ```bash
-# Option 1: Using the server script
-cd src/mail_client_service/src
-python -m mail_client_service.server
+# Activate virtual environment (.venv)
+source .venv/bin/activate
 
-# Option 2: Using uvicorn directly
+# Start the FastAPI server from root of project
+fastapi dev src/mail_client_service/src/mail_client_service/main.py
+
+# Or with uvicorn
 cd src/mail_client_service/src
 uvicorn mail_client_service.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### 3. Access the API
+The service will be available at `http://localhost:8000` with interactive API documentation at `http://localhost:8000/docs`.
 
-- **Service**: http://127.0.0.1:8000
-- **Interactive Docs**: http://127.0.0.1:8000/docs
-- **OpenAPI Schema**: http://127.0.0.1:8000/openapi.json
+### Authentication Flow
 
-## Example Usage
+1. Start the service
+2. Call `GET /login` to initiate Gmail authentication (the service will use Gmail auth variables from your `.env` file by default).
+   - To use the interactive login flow, call `GET /login?interactive=true`.
+3. Follow the interactive OAuth2 flow in your browser (if applicable).
+4. Once authenticated, use the other endpoints to manage messages.
 
-### Get Messages
+### Example API Calls
 
-```bash
-curl "http://127.0.0.1:8000/messages?max_results=5"
-```
-
-### Get Specific Message
-
-```bash
-curl "http://127.0.0.1:8000/messages/{message_id}"
-```
-
-### Mark Message as Read
+> **Tip:**  
+> You can explore and test all API endpoints interactively using the built-in UI at [http://localhost:8000/docs](http://localhost:8000/docs).  
+> This interface allows you to authenticate, send requests, and view responses directly from your browser without writing any code.
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/messages/{message_id}/mark-read"
+# Authenticate
+curl http://localhost:8000/login
+
+# Get messages (default 3)
+curl http://localhost:8000/messages
+
+# Get messages with custom limit
+curl "http://localhost:8000/messages?max_results=10"
+
+# Get specific message
+curl http://localhost:8000/messages/{message_id}
+
+# Mark message as read
+curl -X POST http://localhost:8000/messages/{message_id}/mark-as-read
+
+# Delete message
+curl -X DELETE http://localhost:8000/messages/{message_id}
 ```
 
-### Delete Message
+## Response Format
 
-```bash
-curl -X DELETE "http://127.0.0.1:8000/messages/{message_id}"
-```
+All endpoints return JSON responses with a consistent structure:
 
-## Response Models
-
-### MessageSummary
+### Success Response
 
 ```json
 {
-  "id": "string",
-  "subject": "string",
-  "from_": "string",
-  "date": "string",
-  "snippet": "string"
+  "status": "success",
+  "message": "Operation successful",
+  "data": {
+    /* endpoint-specific data */
+  }
 }
 ```
 
-### MessageDetail
+### Error Response
 
 ```json
 {
-  "id": "string",
-  "subject": "string",
-  "from_": "string",
-  "date": "string",
-  "body": "string"
+  "error": "Error type",
+  "message": "Detailed error description",
+  "status": "error"
 }
 ```
 
-### OperationResponse
+## Error Handling
 
-```json
-{
-  "success": true,
-  "message": "string",
-  "message_id": "string"
-}
-```
+The service provides detailed error responses for various scenarios:
 
-## Architecture
-
-The service follows these principles:
-
-1. **Thin Wrapper**: No business logic reimplementation - delegates to existing components
-2. **Dependency Injection**: Uses FastAPI's `Depends()` for clean client management
-3. **Lifecycle Management**: Proper startup/shutdown handling for the mail client
-4. **Error Boundaries**: Comprehensive exception handling with appropriate HTTP status codes
-
-## Testing
-
-Run the tests:
-
-```bash
-cd src/mail_client_service
-pytest tests/
-```
+- **401 Unauthorized**: User not authenticated
+- **400 Bad Request**: Invalid message ID format
+- **404 Not Found**: Message not found or missing credentials
+- **403 Forbidden**: Access denied to Gmail resource
+- **422 Unprocessable Entity**: Invalid query parameters
+- **429 Too Many Requests**: Authentication already in progress
+- **500 Internal Server Error**: Unexpected errors
 
 ## Dependencies
 
-This service depends on the following workspace components:
+- **FastAPI**: Modern web framework for building APIs
+- **Uvicorn**: ASGI server for running FastAPI applications
+- **mail-client-api**: Abstract mail client interface (workspace dependency)
+- **gmail-client-impl**: Gmail-specific client implementation (workspace dependency)
 
-- `mail-client-api` - Protocol definitions and factory functions
-- `gmail-client-impl` - Gmail-specific implementation
-- `gmail-message-impl` - Message object implementation
+### Project Structure
 
-External dependencies:
+```
+mail_client_service/
+├── src/
+│   └── mail_client_service/
+│       └── main.py          # FastAPI application and endpoints
+├── tests/                   # Test files
+├── pyproject.toml          # Project configuration
+└── README.md               # This file
+```
 
-- `fastapi` - Web framework
-- `uvicorn` - ASGI server
-- `pydantic` - Data validation and serialization
+### Testing
+
+There are two focused test files for the Mail Client Service. They live under
+`src/mail_client_service/tests` and test different layers of the code:
+
+- `test_client_contract.py` — unit/contract tests that verify the `Client` and
+  `Message` shapes using simple mocks. This test validates that client implementations conform to the required interface.
+
+- `test_api_endpoints_integration.py` — integration tests checks the
+  FastAPI application using `fastapi.testclient.TestClient`. These tests cover
+  routing, serialization, input validation and error mapping. This test validates the HTTP surface of the service.
+
+Running the tests
+
+- Run the unit (contract) tests only:
+
+```bash
+PYTHONPATH=src/mail_client_service/src:src/mail_client_api/src \
+  pytest -q src/mail_client_service/tests/test_client_contract.py
+```
+
+- Run the integration (API) tests only:
+
+```bash
+PYTHONPATH=src/mail_client_service/src:src/mail_client_api/src \
+  pytest -q src/mail_client_service/tests/test_api_endpoints_integration.py
+```
+
+- Run both test files for the mail_client_service package:
+
+```bash
+PYTHONPATH=src/mail_client_service/src:src/mail_client_api/src \
+  pytest -q src/mail_client_service/tests
+```

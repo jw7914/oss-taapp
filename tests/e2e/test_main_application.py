@@ -215,6 +215,8 @@ if __name__ == "__main__":
         finally:
             # Restore backup files
             for original, backup in backup_files:
+                if original.exists():
+                    original.unlink()
                 if backup.exists():
                     backup.rename(original)
 
