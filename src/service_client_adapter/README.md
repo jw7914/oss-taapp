@@ -69,7 +69,7 @@ This project relies on **openapi-python-client** to generate the `mail_client_se
 To regenerate:
 
 ```
-uv pip install openapi-python-client
+uv add openapi-python-client
 openapi-python-client generate --url http://127.0.0.1:8000/openapi.json
 ```
 

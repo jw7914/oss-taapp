@@ -301,6 +301,7 @@ class TestGmailClientAuthentication:
 class TestGmailClientHelperMethods:
     """Test cases for GmailClient helper methods."""
 
+    @pytest.mark.local_credentials
     @patch("gmail_client_impl.gmail_impl.InstalledAppFlow")
     @patch("gmail_client_impl.gmail_impl.Path")
     def test_run_interactive_flow_success(self, mock_path: Any, mock_flow_class: Any) -> None:
@@ -328,6 +329,7 @@ class TestGmailClientHelperMethods:
         )
         mock_flow.run_local_server.assert_called_once_with(port=0)
 
+    @pytest.mark.local_credentials
     @patch("gmail_client_impl.gmail_impl.Path")
     def test_run_interactive_flow_missing_credentials(self, mock_path: Any) -> None:
         """Test interactive flow with missing credentials file."""
