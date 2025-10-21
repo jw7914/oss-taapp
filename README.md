@@ -252,13 +252,67 @@ docker build -t mail-client-service .
 To start the application in a container:
 
 ```bash
-docker run -p 8080:8080 mail-client-service
+docker run -p 8000:8000 mail-client-service
 ```
 
 To run container detached (in background):
 
 ```bash
-docker run -d --rm --name mail-client-service -p 8080:8080 mail-client-service
+docker run -d --rm --name mail-client-service -p 8000:8000 mail-client-service
 ```
 
 > **Note:** Ensure Docker is installed and running on your system.
+
+## Deploying with Docker
+
+> **Note:** This is deployed to the Digital Ocean app platform
+
+### 1. Build the Docker Image suitable for platform
+
+```bash
+# Build using architecture cloud machine is running on
+docker build --platform=linux/amd64 -t mail-client-service:linux-amd64 .
+```
+
+### 2. Push and deploy to DigitalOcean
+
+This project can be published to DigitalOcean's Container Registry (DOCR) and deployed to the DigitalOcean App Platform. Below are copy-pasteable steps — replace placeholders (DOCR_NAME, IMAGE_TAG, DO_TOKEN) with your values.
+
+#### Using doctl
+
+Auth
+
+```bash
+doctl auth init
+```
+
+Create a DigitalOcean Container Registry using the Web Interface
+
+- In the DigitalOcean control panel, go to "Container Registry"
+
+Tag, push, and pull
+
+```bash
+# Tag your local image for DOCR
+docker tag mail-client-service registry.digitalocean.com/DOCR_NAME/mail-client-service:IMAGE_TAG
+
+# Push to DOCR
+docker push registry.digitalocean.com/DOCR_NAME/mail-client-service:IMAGE_TAG
+
+# Pull later (from any machine with access)
+docker pull registry.digitalocean.com/DOCR_NAME/mail-client-service:IMAGE_TAG
+```
+
+Deploying to the App Platform
+
+Web UI:
+
+- In the DigitalOcean control panel, go to "Apps" → "Create App".
+- Choose "Container Registry" and select the image you just pushed.
+- Configure the service (instance size, instance count, environment variables, HTTP port 8000), and deploy.
+
+## Deployed documentation
+
+Live site - Hosted on DigitalOcean App Platform:
+
+- URL: https://starfish-app-756pg.ondigitalocean.app/docs

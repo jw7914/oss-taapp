@@ -15,7 +15,7 @@ class Client(ABC):
     def get_message(self, message_id: str) -> Message:
         """Return a message by its ID."""
         raise NotImplementedError
-    
+
     @abstractmethod
     def delete_message(self, message_id: str) -> bool:
         """Delete a message by its ID."""

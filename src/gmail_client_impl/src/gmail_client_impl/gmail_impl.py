@@ -23,7 +23,6 @@ from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore[import-un
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError
 from mail_client_api import message
-from mail_client_api.client import Client
 
 # Try to load .env file if python-dotenv is available
 try:
@@ -43,7 +42,7 @@ except ImportError:
                     os.environ[key.strip()] = value.strip()
 
 
-class GmailClient(Client):
+class GmailClient(mail_client_api.Client):
     """Concrete implementation of the Client abstraction using Gmail API.
 
     This class provides a complete implementation of the mail_client_api.Client abstraction
@@ -167,7 +166,7 @@ class GmailClient(Client):
             raise FileNotFoundError(msg)
 
         flow = InstalledAppFlow.from_client_secrets_file(
-            str(found_path),
+            creds_path,
             self.SCOPES,
         )
         return flow.run_local_server(port=0)  # type: ignore[no-any-return]
@@ -378,7 +377,7 @@ class GmailClient(Client):
                 )
 
 
-def get_client_impl(*, interactive: bool = False) -> Client:
+def get_client_impl(*, interactive: bool = False) -> mail_client_api.Client:
     """Return a configured :class:`GmailClient` instance."""
     return GmailClient(interactive=interactive)
 

@@ -11,7 +11,8 @@ X = TypeVar("X", bound="MessagesResponse")
 
 @_attrs_define
 class MessageResponse:
-    """ """ 
+    """ """
+
     id: str
     from_: str
     to: str
@@ -76,17 +77,16 @@ class MessageResponse:
 
 @_attrs_define
 class MessagesResponse:
-    """ """ 
-    messages: list[dict[str,Any]]
+    """ """
+
+    messages: list[dict[str, Any]]
     additional_properties: dict[str, str] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
-            {
-                "messages": self.messages
-            },
+            {"messages": self.messages},
         )
         return field_dict
 
@@ -94,14 +94,11 @@ class MessagesResponse:
     def from_dict(cls: type[X], src_dict: Mapping[str, Any]) -> X:
         d = dict(src_dict)
         messages = d.pop("messages")
-        
 
-        messages_response = cls(
-            messages=messages
-        )
+        messages_response = cls(messages=messages)
 
         messages_response.additional_properties = d
-        return messages_response 
+        return messages_response
 
     @property
     def additional_keys(self) -> list[str]:
@@ -119,9 +116,11 @@ class MessagesResponse:
     def __contains__(self, key: str) -> bool:
         return key in self.additional_properties
 
+
 class MessageContents(Message):
     def __init__(self, response: MessageResponse):
         self.contents = response
+
     @property
     def id(self) -> str:
         return self.contents.id

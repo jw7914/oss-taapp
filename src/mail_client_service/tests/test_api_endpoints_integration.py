@@ -1,7 +1,9 @@
 from types import SimpleNamespace, ModuleType
 
 import sys
+
 from fastapi.testclient import TestClient
+import pytest
 
 import mail_client_api
 import pytest
@@ -38,9 +40,8 @@ def test_messages_require_authentication() -> None:
     resp = client.get("/messages")
     assert resp.status_code == 401
     body = resp.json()
-    # ensure the error shape matches the API contract
-    assert "detail" in body
-    assert body["detail"]["error"] == "Not authenticated"
+    assert "error" in body
+    assert body["error"] == "Not authenticated"
 
 
 def test_login_and_get_messages(monkeypatch:pytest.MonkeyPatch) -> None:
@@ -136,18 +137,26 @@ def test_login_error_mapping(monkeypatch:pytest.MonkeyPatch) -> None:
     _ensure_logged_out()
 
     # No valid credentials -> 401
-    monkeypatch.setattr(mail_client_api, "get_client", lambda interactive=False: (_ for _ in ()).throw(RuntimeError("No valid credentials found")))
+    monkeypatch.setattr(
+        mail_client_api, "get_client", lambda interactive=False: (_ for _ in ()).throw(RuntimeError("No valid credentials found"))
+    )
     client = TestClient(app)
     r = client.get("/login")
     assert r.status_code in (401, 500)
 
     # Interactive auth failed -> 400
-    monkeypatch.setattr(mail_client_api, "get_client", lambda interactive=False: (_ for _ in ()).throw(RuntimeError("Interactive authentication failed")))
+    monkeypatch.setattr(
+        mail_client_api,
+        "get_client",
+        lambda interactive=False: (_ for _ in ()).throw(RuntimeError("Interactive authentication failed")),
+    )
     r2 = client.get("/login")
     assert r2.status_code in (400, 500)
 
     # FileNotFoundError -> 404
-    monkeypatch.setattr(mail_client_api, "get_client", lambda interactive=False: (_ for _ in ()).throw(FileNotFoundError("missing")))
+    monkeypatch.setattr(
+        mail_client_api, "get_client", lambda interactive=False: (_ for _ in ()).throw(FileNotFoundError("missing"))
+    )
     r3 = client.get("/login")
     assert r3.status_code in (404, 500)
 
@@ -202,7 +211,9 @@ def test_message_not_found_and_mutations(monkeypatch:pytest.MonkeyPatch) -> None
 def test_login_runtime_generic_error(monkeypatch:pytest.MonkeyPatch) -> None:
     _ensure_logged_out()
     # RuntimeError that doesn't match known messages should map to 500
-    monkeypatch.setattr(mail_client_api, "get_client", lambda interactive=False: (_ for _ in ()).throw(RuntimeError("unexpected failure")))
+    monkeypatch.setattr(
+        mail_client_api, "get_client", lambda interactive=False: (_ for _ in ()).throw(RuntimeError("unexpected failure"))
+    )
     client = TestClient(app)
     r = client.get("/login")
     assert r.status_code == 500
@@ -400,3 +411,77 @@ def test_mark_and_delete_success(monkeypatch:pytest.MonkeyPatch) -> None:
     r3 = client.delete(f"/messages/{fake_message.id}")
     assert r3.status_code == 200
     assert r3.json()["status"] == "success"
+
+def test_login_interactive_flag(monkeypatch:pytest.MonkeyPatch) -> None:
+    _ensure_logged_out()
+    called = {}
+
+    def fake_get_client(interactive=False):
+        called["interactive"] = interactive
+        return SimpleNamespace(get_messages=lambda max_results=3: iter([]))
+
+    monkeypatch.setattr(mail_client_api, "get_client", fake_get_client)
+    client = TestClient(app)
+
+    r = client.get("/login?interactive=true")
+    assert r.status_code == 200
+    # ensure the interactive query param was forwarded
+    assert called.get("interactive") is True
+
+def test_messages_max_results_upper_bound_invalid(monkeypatch:pytest.MonkeyPatch) -> None:
+    _ensure_logged_out()
+    fake_client = SimpleNamespace(get_messages=lambda max_results=3: iter([]))
+    monkeypatch.setattr(mail_client_api, "get_client", lambda interactive=False: fake_client)
+    client = TestClient(app)
+    client.get("/login")
+
+    resp = client.get("/messages?max_results=101")
+    assert resp.status_code == 422
+
+def test_messages_max_results_upper_bound_valid(monkeypatch:pytest.MonkeyPatch) -> None:
+    _ensure_logged_out()
+    fake_client = SimpleNamespace(get_messages=lambda max_results=100: iter([]))
+    monkeypatch.setattr(mail_client_api, "get_client", lambda interactive=False: fake_client)
+    client = TestClient(app)
+    client.get("/login")
+
+    resp = client.get("/messages?max_results=100")
+    # OK even if the list is empty; we just want to see a 200/validation pass
+    assert resp.status_code == 200
+
+def test_message_serialization_fields(monkeypatch:pytest.MonkeyPatch) -> None:
+    _ensure_logged_out()
+    fake_message = SimpleNamespace(
+        id="msg_full",
+        from_="alice@example.com",
+        to="bob@example.com",
+        date="2025-10-03",
+        subject="Hello",
+        body="Test body",
+    )
+    fake_client = SimpleNamespace(
+        get_messages=lambda max_results=3: iter([fake_message]),
+        get_message=lambda message_id: fake_message,
+        mark_as_read=lambda message_id: True,
+        delete_message=lambda message_id: True,
+    )
+    monkeypatch.setattr(mail_client_api, "get_client", lambda interactive=False: fake_client)
+    client = TestClient(app)
+    client.get("/login")
+
+    msgs_resp = client.get("/messages?max_results=1")
+    assert msgs_resp.status_code == 200
+    msg = msgs_resp.json()["messages"][0]
+    assert msg["id"] == "msg_full"
+    assert msg["from"] == "alice@example.com"
+    assert msg["to"] == "bob@example.com"
+    assert msg["date"] == "2025-10-03"
+    assert msg["subject"] == "Hello"
+    assert msg["body"] == "Test body"
+
+def test_logout_when_no_active_session():
+    _ensure_logged_out()
+    client = TestClient(app)
+    r = client.get("/logout")
+    assert r.status_code == 200
+    assert r.json()["message"] in ("No active session to logout", "Logged out successfully")

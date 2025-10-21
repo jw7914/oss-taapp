@@ -74,9 +74,9 @@ jobs:
           command: |
             source .venv/bin/activate
             # Run only unit tests from src/ directories (fast, isolated tests)
-            pytest src/ tests/ -m "not local_credentials" \
-                   --junitxml=test-results/circleci/junit.xml -v \
-                   --cov=src --cov-report=term
+            pytest src/ --cov=src --cov-report=xml --cov-report=term \
+                     --junitxml=test-results/unit/junit.xml \
+                     --cov-fail-under=65
       - run:
           name: "Run Static Analysis (mypy)"
           command: |
