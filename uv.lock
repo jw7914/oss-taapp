@@ -8,6 +8,7 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "chat-client-api",
     "gmail-client-impl",
     "mail-client-api",
     "mail-client-service",
@@ -141,6 +142,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ee/7a/36fbcf646e41f710ce0a563c1c9a343c6edf9be80786edeb15b6f62e17db/charset_normalizer-3.4.3-cp314-cp314-win_amd64.whl", hash = "sha256:73dc19b562516fc9bcf6e5d6e596df0b4eb98d87e4f79f3ae71840e6ed21361c", size = 107400, upload-time = "2025-08-09T07:56:55.172Z" },
     { url = "https://files.pythonhosted.org/packages/8a/1f/f041989e93b001bc4e44bb1669ccdcf54d3f00e628229a85b08d330615c5/charset_normalizer-3.4.3-py3-none-any.whl", hash = "sha256:ce571ab16d890d23b5c278547ba694193a45011ff86a9162a71307ed9f86759a", size = 53175, upload-time = "2025-08-09T07:57:26.864Z" },
 ]
+
+[[package]]
+name = "chat-client-api"
+version = "0.1.0"
+source = { editable = "src/chat_client_api" }
 
 [[package]]
 name = "click"

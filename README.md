@@ -315,4 +315,4 @@ Web UI:
 
 Live site - Hosted on DigitalOcean App Platform:
 
-- URL: https://starfish-app-756pg.ondigitalocean.app/docs
+- URL: https://mail-client-service-rrg6e.ondigitalocean.app
