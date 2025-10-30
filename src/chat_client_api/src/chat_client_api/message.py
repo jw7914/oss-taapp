@@ -3,8 +3,8 @@
 from abc import ABC, abstractmethod
 
 
-class DiscordMessage(ABC):
-    """Abstract base class representing an email message."""
+class ChatMessage(ABC):
+    """Abstract base class representing an chat message."""
 
     @property
     @abstractmethod
@@ -27,7 +27,7 @@ class DiscordMessage(ABC):
     @property
     @abstractmethod
     def channel_id(self) -> str:
-        """Return the unique identifier of the message."""
+        """Return the unique identifier of the channel."""
         raise NotImplementedError
 
     @property
@@ -43,7 +43,35 @@ class DiscordMessage(ABC):
         raise NotImplementedError
 
 
-def get_message(msg_id: str, raw_data: str) -> DiscordMessage:
+class ChatChannel(ABC):
+    """Abstract base class representing an chat channel."""
+
+    @property
+    @abstractmethod
+    def channel_id(self) -> str:
+        """Return the unique identifier of the channel."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def channel_name(self) -> str:
+        """Return the unique identifier of the channel."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def channel_type(self) -> int:
+        """Return the type of the channel."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def channel_position(self) -> int:
+        """Return the type of the channel."""
+        raise NotImplementedError
+
+
+def get_message(msg_id: str, raw_data: str) -> ChatMessage:
     """Return an instance of a Message.
 
     Args:
@@ -58,3 +86,20 @@ def get_message(msg_id: str, raw_data: str) -> DiscordMessage:
 
     """
     raise NotImplementedError
+
+def get_channel(channel_id: str, raw_data: dict[str, str]) -> ChatChannel:
+    """Return an instance of a channel.
+
+    Args:
+        channel_id (str): The unique identifier for the message.
+        raw_data (dict[str, str]): The raw data used to construct the channel
+
+    Returns:
+    Channel: An instance conforming to the Channel contract.
+
+    Raises:
+        NotImplementedError: If the function is not overridden by an implementation.
+
+    """
+    raise NotImplementedError
+

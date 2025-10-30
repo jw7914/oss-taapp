@@ -3,17 +3,16 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 
-# from chat_client_api.message import DiscordMessage
+from chat_client_api.message import ChatMessage
 
-__all__ = ["Client", "get_client"]
+__all__ = ["ChatClient", "get_client"]
 
 
-#TO BE REFACTOREDs
-class DiscordClient(ABC):
-    """Abstract base class representing a mail client for email operations."""
+class ChatClient(ABC):
+    """Abstract base class representing a chat client for chat operations."""
 
     @abstractmethod
-    def get_message(self, message_id: str) -> DiscordMessage:
+    def get_message(self, message_id: str) -> ChatMessage:
         """Return a message by its ID."""
         raise NotImplementedError
 
@@ -28,11 +27,11 @@ class DiscordClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_messages(self, max_results: int = 10) -> Iterator[DiscordMessage]:
+    def get_messages(self, max_results: int = 10) -> Iterator[ChatMessage]:
         """Return an iterator of messages from the inbox."""
         raise NotImplementedError
 
 
-def get_client(*, interactive: bool = False) -> Client:
+def get_client(*, interactive: bool = False) -> ChatClient:
     """Return an instance of a Mail Client."""
     raise NotImplementedError
