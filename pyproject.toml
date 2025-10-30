@@ -29,6 +29,7 @@ members = [
   "src/mail_client_service",
   "src/mail_client_service_api_client",
   "src/service_client_adapter",
+  "src/test",
 ]
 
 
