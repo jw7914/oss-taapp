@@ -5,7 +5,7 @@ from collections.abc import Iterator
 
 from mail_client_api.message import Message
 
-__all__ = ["Client", "ge    t_client"]
+__all__ = ["Client", "get_client"]
 
 
 class Client(ABC):

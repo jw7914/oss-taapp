@@ -12,17 +12,17 @@ class ChatClient(ABC):
     """Abstract base class representing a chat client for chat operations."""
 
     @abstractmethod
-    def get_message(self, message_id: str) -> ChatMessage:
+    def get_message(self, channel_id: str, message_id: str) -> ChatMessage:
         """Return a message by its ID."""
         raise NotImplementedError
 
     @abstractmethod
-    def delete_message(self, message_id: str) -> bool:
+    def delete_message(self, channel_id: str, message_id: str) -> bool:
         """Delete a message by its ID."""
         raise NotImplementedError
 
     @abstractmethod
-    def get_messages(self, max_results: int = 10) -> Iterator[ChatMessage]:
+    def get_messages(self, channel_id: str, max_results: int = 10) -> Iterator[ChatMessage]:
         """Return an iterator of messages from the inbox."""
         raise NotImplementedError
 
