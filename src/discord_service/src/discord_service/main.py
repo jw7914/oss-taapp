@@ -187,7 +187,19 @@ def serialize_message(msg) -> dict:
         "timestamp": getattr(msg, "timestamp", ""),
     }
 
+def serialize_channel(ch) -> dict:
+    return {
+        "id": getattr(ch, "channel_id", getattr(ch, "id", "")),
+        "name": getattr(ch, "channel_name", getattr(ch, "name", "")),
+        "type": getattr(ch, "channel_type", None),
+        "position": getattr(ch, "channel_position", None),
+    }
 
+def serialize_users(user) -> dict:
+    return {
+        "id": user.get("id", ""),
+        "username": user.get("username", ""),
+    }
 
 @app.get("/user", tags=["User"], summary="Get current user info")
 def get_current_user() -> JSONResponse:
@@ -315,3 +327,24 @@ def delete_message(channel_id: str, message_id: str) -> JSONResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "Failed to delete message", "message": str(e), "status": "error"},
         )
+
+@app.get("/users/{guild_id}", tags=["User"], summary="Retrieves channel info")
+def get_users(guild_id: str) -> JSONResponse:
+    try:    
+        users = app.state.client.get_users(guild_id = guild_id)
+        user_list = [serialize_users(u['user']) for u in users]
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"users": user_list , "status": "success"})
+    except Exception as e:
+        raise HTTPException( 
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "Failed to get channel", "message": str(e), "status": "error"})
+
+@app.get("/channels/{channel_id}", tags=["Channel"], summary="Retrieves channel info")
+def get_channel(channel_id: str) -> JSONResponse:
+    try:    
+        channel = app.state.client.get_channel(channel_id=channel_id)
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"channel_info": serialize_channel(channel) , "status": "success"})
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "Failed to get channel", "message": str(e), "status": "error"})

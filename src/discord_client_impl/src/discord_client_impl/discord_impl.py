@@ -16,10 +16,9 @@ from authlib.integrations.httpx_client import OAuth2Client  # type: ignore[impor
 from chat_client_api.client import ChatClient
 from chat_client_api.message import ChatChannel, ChatMessage
 
-from discord_client_impl.message_impl import DiscordMessage
+from discord_client_impl.message_impl import DiscordChannel, DiscordMessage
 
 logger = logging.getLogger(__name__)
-
 
 try:
     from dotenv import load_dotenv
@@ -67,6 +66,7 @@ class DiscordClient(ChatClient):
         Args:
             access_token: Discord OAuth2 access token (if already authenticated).
             client_id: Discord application client ID (for OAuth flow).
+            bot_token: Discord bot token (for user interaction)
             client_secret: Discord application client secret (for OAuth flow).
             redirect_uri: OAuth2 redirect URI (for OAuth flow).
 
@@ -310,6 +310,46 @@ class DiscordClient(ChatClient):
             logger.debug(
                 "Failed to delete message %s in channel %s: %s",
                 message_id,
+                channel_id,
+                exc,
+            )
+
+    def get_users(self, guild_id: str) -> list[str]:
+        """Get users from a server.
+
+        Returns a list of users"
+        """
+        try:
+            response = self._http_client.get(f"/guilds/{guild_id}/members?limit=1000")
+            response.raise_for_status()
+            user_list = response.json()
+            if not isinstance(user_list, list):
+                logger.warning(
+                    "Expected a list, got %s",
+                    type(user_list),
+                )
+            else:
+                return user_list
+        except httpx.HTTPError as exc:
+            logger.debug(
+                "Failed to get users in %s: %s",
+                guild_id,
+                exc,
+            )
+
+    def get_channel(self, channel_id: str) -> ChatChannel:
+        """Get channel info from channel_id.
+
+        Returns a DiscordChannel object.
+        """
+        try:
+            response = self._http_client.get(f"/channels/{channel_id}")
+            response.raise_for_status()
+            channel_data = response.json()
+            return DiscordChannel(channel_data)
+        except httpx.HTTPError as exc:
+            logger.debug(
+                "Failed to get channel %s: %s",
                 channel_id,
                 exc,
             )
