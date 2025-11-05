@@ -22,11 +22,6 @@ class ChatClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def mark_as_read(self, message_id: str) -> bool:
-        """Mark a message as read by its ID."""
-        raise NotImplementedError
-
-    @abstractmethod
     def get_messages(self, max_results: int = 10) -> Iterator[ChatMessage]:
         """Return an iterator of messages from the inbox."""
         raise NotImplementedError

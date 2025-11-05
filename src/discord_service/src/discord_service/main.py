@@ -188,14 +188,6 @@ def serialize_message(msg) -> dict:
     }
 
 
-def serialize_channel(ch) -> dict:
-    return {
-        "id": getattr(ch, "channel_id", getattr(ch, "id", "")),
-        "name": getattr(ch, "channel_name", getattr(ch, "name", "")),
-        "type": getattr(ch, "channel_type", None),
-        "position": getattr(ch, "channel_position", None),
-    }
-
 
 @app.get("/user", tags=["User"], summary="Get current user info")
 def get_current_user() -> JSONResponse:
@@ -209,25 +201,10 @@ def get_current_user() -> JSONResponse:
         )
 
 
-@app.get("/channels", tags=["Channels"], summary="List channels")
-def list_channels() -> JSONResponse:
-    try:
-        channels = list(app.state.client.list_channels())
-        serialized = [serialize_channel(ch) for ch in channels]
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"channels": serialized, "status": "success"})
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Failed to list channels", "message": str(e), "status": "error"},
-        )
-
-
 @app.get("/channels/{channel_id}/messages", tags=["Messages"], summary="List messages in a channel")
-def list_channel_messages(request: Request, channel_id: str, limit: int = Query(50, ge=1, le=100),) -> JSONResponse:
+def list_channel_messages(channel_id: str, limit: int = Query(50, ge=1, le=100),) -> JSONResponse:
     try:    
-        token = request.cookies.get("discord_access_token")
-        
-        messages = list(app.state.client.list_messages(channel_id=channel_id, token=token ,limit=limit))
+        messages = list(app.state.client.list_messages(channel_id=channel_id ,limit=limit))
         serialized = [serialize_message(m) for m in messages]   
         return JSONResponse(status_code=status.HTTP_200_OK, content={"messages": serialized, "status": "success"})
     except Exception as e:
@@ -237,10 +214,10 @@ def list_channel_messages(request: Request, channel_id: str, limit: int = Query(
         )
 
 
-@app.post("/channels/{channel_id}/messages", tags=["Messages"], summary="Send a message to a channel")
-def send_message(channel_id: str, content: str = Query(..., description="Message content")) -> JSONResponse:
+@app.post("/message/{recipient_id}", tags=["Messages"], summary="Send a message to a channel")
+def send_message(recipient_id: str, content: str = Query(..., description="Message content")) -> JSONResponse:
     try:
-        new_msg = app.state.client.send_message(channel_id=channel_id, content=content)
+        new_msg = app.state.client.send_message(recipient_id=recipient_id, content=content)
         return JSONResponse(
             status_code=status.HTTP_201_CREATED, content={"message": serialize_message(new_msg), "status": "success"}
         )
@@ -252,13 +229,13 @@ def send_message(channel_id: str, content: str = Query(..., description="Message
 
 
 @app.get(
-    "/messages/{message_id}",
+    "/channels/{channel_id}/messages/{message_id}",
     tags=["Messages"],
     summary="Get message by id",
     description="Requires `channel_id` query parameter to scope the search",
 )
 def get_message_by_id(
-    message_id: str, channel_id: str | None = Query(None, description="Channel id to search in")
+    message_id: str, channel_id: str 
 ) -> JSONResponse:
     if channel_id is None:
         raise HTTPException(
