@@ -24,7 +24,7 @@ class DummySyncClient:
 
 
 class DummyAsyncClient:
-    def __init__(self, response: httpx.Response, raise_on_unexpected_status: bool = False)-> None:
+    def __init__(self, response: httpx.Response, raise_on_unexpected_status: bool = False) -> None:
         self._response = response
         self.raise_on_unexpected_status = raise_on_unexpected_status
 

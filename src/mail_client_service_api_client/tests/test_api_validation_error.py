@@ -48,4 +48,3 @@ def test_item_ops_and_contains_and_additional_keys_behavior() -> None:
     # KeyError when accessing missing key
     with pytest.raises(KeyError):
         _ = v["missing_key"]
-

@@ -1,0 +1,54 @@
+[project]
+name = "discord-client-service"
+version = "0.1.0"
+description = "FastAPI-based Discord client service providing authentication and chat endpoints"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "chat-client-api",
+    "discord-client-impl",
+]
+
+[tool.uv.sources]
+chat-client-api = { workspace = true }
+discord-client-impl = { workspace = true }
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "httpx>=0.25.0",
+    "pytest-asyncio>=0.21.0",
+    "mypy>=1.17.0",
+    "ruff>=0.12.7",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.build]
+directory = "dist"
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/discord_service"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/discord_service/py.typed" = "discord_service/py.typed"
+
+[tool.pytest.ini_options]
+pythonpath = [".", "src"]
+testpaths = ["tests"]
+addopts = ["--cov", "--cov-report=term-missing", "--import-mode=importlib"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*"]

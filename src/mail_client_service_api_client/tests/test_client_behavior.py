@@ -110,12 +110,15 @@ async def async_get_async_client_auth(ac: AuthenticatedClient) -> AsyncClient:
     return ac.get_async_httpx_client()
 
 
-@pytest.mark.parametrize("prefix,header_name,expected", [
-    ("Bearer", "Authorization", "Bearer t"),
-    ("", "Authorization", "t"),
-    ("Token", "X-Auth", "Token t"),
-])
-def test_authenticated_client_header_variants(prefix: str, header_name:str, expected: str) -> None:
+@pytest.mark.parametrize(
+    "prefix,header_name,expected",
+    [
+        ("Bearer", "Authorization", "Bearer t"),
+        ("", "Authorization", "t"),
+        ("Token", "X-Auth", "Token t"),
+    ],
+)
+def test_authenticated_client_header_variants(prefix: str, header_name: str, expected: str) -> None:
     ac = AuthenticatedClient(base_url="http://example", token="t", prefix=prefix, auth_header_name=header_name)
     client = ac.get_httpx_client()
     assert client.headers[header_name] == expected

@@ -18,12 +18,12 @@ class DummySyncClient:
     def get_httpx_client(self) -> "DummySyncClient":
         return self
 
-    def request(self, **kwargs:Any) -> httpx.Response:
+    def request(self, **kwargs: Any) -> httpx.Response:
         return self._response
 
 
 class DummyAsyncClient:
-    def __init__(self, response: httpx.Response, raise_on_unexpected_status: bool = False)-> None:
+    def __init__(self, response: httpx.Response, raise_on_unexpected_status: bool = False) -> None:
         self._response = response
         self.raise_on_unexpected_status = raise_on_unexpected_status
 

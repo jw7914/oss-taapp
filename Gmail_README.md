@@ -21,17 +21,16 @@ This project is built on the principle of "programming integrated over time." Th
 
 The project is a `uv` workspace containing four primary packages:
 
-3.  **`cht_client_api`**: Defines the abstract `Client` base class (ABC). This is the contract for what actions a mail client can perform (e.g., `get_messages`).
-4.  **`discord_client_impl`**: Provides the class, a concrete implementation that uses the Google API to perform the actions defined in the `Client` abstraction.
+3.  **`mail_client_api`**: Defines the abstract `Client` base class (ABC). This is the contract for what actions a mail client can perform (e.g., `get_messages`).
+4.  **`gmail_client_impl`**: Provides the `GmailClient` class, a concrete implementation that uses the Google API to perform the actions defined in the `Client` abstraction.
 
 ## Project Structure
 
 ```
 ta-assignment/
 ├── src/                          # Source packages (uv workspace members)
-│   ├── chat_client_api/          # Abstract chat client base class (ABC)
-│   ├── discord_client_impl/      # Discord-specific client implementation
-│   └── discord_service/          # FastAPI service exposing endpoints
+│   ├── mail_client_api/          # Abstract mail client base class (ABC)
+│   └── gmail_client_impl/        # Gmail-specific client implementation
 ├── tests/                        # Integration and E2E tests
 │   ├── integration/              # Component integration tests
 │   └── e2e/                      # End-to-end application tests
@@ -68,15 +67,15 @@ ta-assignment/
     cd ta-assignment
     ```
 
-3.  **Set Up Discord Credentials:**
+3.  **Set Up Google Credentials:**
 
-    - Follow the [Discord Develper instructions](https://discord.com/developers/applications) to create a Discord Application and obtain your ClientID and ClientSecret
-    - Add redirect URIs to match your service to allow OAuth
-    - Add your varaibles into a .env file.
+    - Follow the [Google Cloud instructions](https://developers.google.com/gmail/api/quickstart/python#authorize_credentials_for_a_desktop_application) to enable the Gmail API and download your OAuth 2.0 credentials.
+    - Rename the downloaded file to `credentials.json` and place it in the root of this project.
     - **Alternative**: For CI/CD environments, you can use environment variables instead:
       ```bash
-      export DISCORD_CLIENT_ID="your_client_id"
-      export DISCORD_CLIENT_SECRET="your_client_secret"
+      export GMAIL_CLIENT_ID="your_client_id"
+      export GMAIL_CLIENT_SECRET="your_client_secret"
+      export GMAIL_REFRESH_TOKEN="your_refresh_token"
       ```
     - **Important:** Credential files contain secrets and are ignored by `.gitignore`.
 
@@ -96,6 +95,13 @@ ta-assignment/
     .venv\Scripts\Activate.ps1
     ```
 
+6.  **Perform Initial Authentication:**
+    Run the main application once to perform the interactive OAuth flow. This will open a browser window for you to grant permission.
+    ```bash
+    uv run python main.py
+    ```
+    After you approve, a `token.json` file will be created. This file is also ignored by `.gitignore` and will be used for authentication in subsequent runs.
+
 ## Development Workflow
 
 All commands should be run from the project root with the virtual environment activated.
@@ -105,7 +111,7 @@ All commands should be run from the project root with the virtual environment ac
 To run the main demonstration script:
 
 ```bash
-fastapi dev src/discord_service/src/discord_service/main.py
+uv run python main.py
 ```
 
 ### Running the Toolchain
@@ -238,7 +244,7 @@ You can run the application in a containerized environment using Docker.
 From the project root, build the image:
 
 ```bash
-docker build -t chat-client-service .
+docker build -t mail-client-service .
 ```
 
 ### 2. Run the Container
@@ -246,47 +252,67 @@ docker build -t chat-client-service .
 To start the application in a container:
 
 ```bash
-docker run -p 8000:8000 chat-client-service
+docker run -p 8000:8000 mail-client-service
 ```
 
 To run container detached (in background):
 
 ```bash
-docker run -d --rm --name chat-client-service -p 8000:8000 chat-client-service
+docker run -d --rm --name mail-client-service -p 8000:8000 mail-client-service
 ```
 
 > **Note:** Ensure Docker is installed and running on your system.
 
 ## Deploying with Docker
 
-> **Note:** This is deployed to a Virtual Machine on Digital Ocean (mininal setup but more cost)
+> **Note:** This is deployed to the Digital Ocean app platform
 
-### 1. Build the Docker Image
-
-```bash
-docker build -t chat-client-service .
-```
-
-### 2. Run the Container
-
-To start the application in a container:
+### 1. Build the Docker Image suitable for platform
 
 ```bash
-docker run -p 8000:8000 chat-client-service
+# Build using architecture cloud machine is running on
+docker build --platform=linux/amd64 -t mail-client-service:linux-amd64 .
 ```
 
-To run container detached (in background):
+### 2. Push and deploy to DigitalOcean
+
+This project can be published to DigitalOcean's Container Registry (DOCR) and deployed to the DigitalOcean App Platform. Below are copy-pasteable steps — replace placeholders (DOCR_NAME, IMAGE_TAG, DO_TOKEN) with your values.
+
+#### Using doctl
+
+Auth
 
 ```bash
-docker run -d --rm --name chat-client-service -p 8000:8000 chat-client-service
+doctl auth init
 ```
 
-## 3. Access the service
+Create a DigitalOcean Container Registry using the Web Interface
 
-Go to the URL of the VM with the port that is exposed from the Dockerfile
+- In the DigitalOcean control panel, go to "Container Registry"
 
-# Our Deployed link:
+Tag, push, and pull
 
-Live site - Hosted on DigitalOcean Ubunutu VM:
+```bash
+# Tag your local image for DOCR
+docker tag mail-client-service registry.digitalocean.com/DOCR_NAME/mail-client-service:IMAGE_TAG
 
-- URL: http://134.209.168.0:8000/docs
+# Push to DOCR
+docker push registry.digitalocean.com/DOCR_NAME/mail-client-service:IMAGE_TAG
+
+# Pull later (from any machine with access)
+docker pull registry.digitalocean.com/DOCR_NAME/mail-client-service:IMAGE_TAG
+```
+
+Deploying to the App Platform
+
+Web UI:
+
+- In the DigitalOcean control panel, go to "Apps" → "Create App".
+- Choose "Container Registry" and select the image you just pushed.
+- Configure the service (instance size, instance count, environment variables, HTTP port 8000), and deploy.
+
+## Deployed documentation
+
+Live site - Hosted on DigitalOcean App Platform:
+
+- URL: https://mail-client-service-rrg6e.ondigitalocean.app

@@ -5,6 +5,7 @@ description = "Template repository for a mail client"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "openapi-python-client>=0.27.1",
     "types-requests>=2.32.4.20250913",
 ]
 
@@ -29,6 +30,8 @@ members = [
   "src/mail_client_service",
   "src/mail_client_service_api_client",
   "src/service_client_adapter",
+  "src/chat_client_api",
+  "src/discord_client_impl",
 ]
 
 
@@ -48,7 +51,16 @@ per-file-ignores = { "**/test_*.py" = ["TRY300", "BLE001", "ANN401", "SLF001", "
 [tool.mypy]
 strict = true
 explicit_package_bases = true # Required for src layout
-mypy_path = ["src/gmail_client_impl/src","src/mail_client_api/src","src/mail_client_service/src","src/service_client_adapter/src","src/mail_client_service_api_client/src"]  
+mypy_path = [
+    "src/chat_client_api/src",
+    "src/mail_client_api/src",
+    "src/gmail_client_impl/src",
+    "src/mail_client_service/src",
+    "src/mail_client_service_api_client/src",
+    "src/service_client_adapter/src",
+    "src/discord_client_impl/src",
+    "src/discord_service/src",
+]  
 ignore_missing_imports = false
 warn_unused_ignores = false
 
@@ -66,7 +78,10 @@ pythonpath = [
     "src/mail_client_api/src",
     "src/mail_client_service/src",
     "src/mail_client_service_api_client/src",
-    "src/service_client_adapter/src"
+    "src/service_client_adapter/src",
+    "src/gmail_client_impl/src",
+    "src/chat_client_api/src",
+    "src/discord_service/src",
 ]
 testpaths = ["tests", "src/*/tests"]
 addopts = ["--cov", "--cov-report=term-missing", "--import-mode=importlib"]

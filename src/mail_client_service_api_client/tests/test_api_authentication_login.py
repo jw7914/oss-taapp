@@ -32,7 +32,7 @@ class DummyAsyncClient:
     def get_async_httpx_client(self) -> "DummyAsyncClient":
         return self
 
-    async def request(self, **kwargs: Any)-> httpx.Response:
+    async def request(self, **kwargs: Any) -> httpx.Response:
         return self._response
 
 
@@ -84,15 +84,18 @@ def test_asyncio_detailed_and_async_parse_200() -> None:
     parsed = asyncio.run(login.asyncio(client=cast(ApiClient, client)))
     assert parsed == {"ok": "async"}
 
+
 def test_get_kwargs_interactive_true() -> None:
     kw = login._get_kwargs(interactive=True)
     assert "params" in kw
     assert kw["params"]["interactive"] is True
 
+
 def test_get_kwargs_interactive_none_removes_param() -> None:
     kw = login._get_kwargs(interactive=UNSET)
     assert "params" in kw
     assert kw["params"] == {}
+
 
 def test_sync_detailed_unexpected_status_returns_none_when_flag_false() -> None:
     resp = httpx.Response(500, content=b"server error", headers={"X-Test": "1"})
@@ -103,11 +106,13 @@ def test_sync_detailed_unexpected_status_returns_none_when_flag_false() -> None:
     assert detailed.content == resp.content
     assert detailed.headers == resp.headers
 
+
 def test_asyncio_detailed_unexpected_status_raises() -> None:
     resp = httpx.Response(503, content=b"unavailable")
     client = DummyAsyncClient(resp, raise_on_unexpected_status=True)
     with pytest.raises(errors.UnexpectedStatus):
         asyncio.run(login.asyncio_detailed(client=cast(ApiClient, client)))
+
 
 def test_request_kwargs_forwarded_to_client() -> None:
     resp = httpx.Response(200, json={"ok": True})
@@ -124,4 +129,6 @@ def test_request_kwargs_forwarded_to_client() -> None:
     # call sync which should forward params to the client's request
     parsed = login.sync(client=cast(ApiClient, client), interactive=True)
     assert parsed == {"ok": True}
+
+
 # ...existing code...
