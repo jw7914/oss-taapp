@@ -11,9 +11,11 @@ This guide explains the base repository. It is broken up in to sections that exp
 
 ## Architecture Overview
 
-- Two primary components live under `src/`:
+- Four primary components live under `src/`:
   - `mail_client_api` — the small, framework-like abstraction that defines contracts (interfaces) for working with mail messages and clients.
   - `gmail_client_impl` — a concrete implementation of the `mail_client_api` using the Gmail REST API.
+  - `chat_client_api` - small abstraction that defines an interface for chat messages 
+  - `discord_client_impl` - a concrete implementation of the `chat_client_api` using the Discord REST API
 - The repository uses a `src` layout for packages to simplify installs and to make imports explicit.
 - Components communicate via clean, small public interfaces (ABCs) rather than sharing implementation details.
 
@@ -21,11 +23,15 @@ This guide explains the base repository. It is broken up in to sections that exp
 
 - `mail_client_api` exposes the `Client` and `Message` abstractions (abstract base classes) and thin factory fallbacks like `get_client()` and `get_message()`.
 - `gmail_client_impl` implements those abstractions (`GmailClient`, `GmailMessage`) and registers them into the API module at runtime using simple registration functions (dependency injection — see below).
+- `chat_client_api` exposes the ChatClient and ChatMessage abstractions (ABCs) and factory methods like get_client() and get_message().
+- `discord_client_impl` implements these abstractions (DiscordClient, DiscordMessage, DiscordChannel) and registers them at runtime using dependency injection.
 - Tests exercise both the abstraction surface and the concrete implementation; integration and CI glue use environment variables or local token files to obtain credentials.
 
 ### Interface design
 
-- Public surface: `mail_client_api.client.Client` and `mail_client_api.message.Message` — both are ABCs that define the contract for mail operations and message properties.
+- Mail Client: `mail_client_api.client.Client` and `mail_client_api.message.Message` — both are ABCs that define the contract for mail operations and message properties.
+- Chat Client: `chat_client_api.client.ChatClient` and `chat_client_api.message.ChatMessage` — ABCs defining chat operations and message properties.
+- Additional Channel interface: `chat_client_api.channel.ChatChannel` — ABC for channel operations specific to chat platforms.
 - Design rationale: use small, explicit interfaces (few methods/properties) to make mocking, testing, and alternate implementations easy. The ABCs are intentionally minimal and focused on the operations the remainder of the codebase needs.
 
 ### Implementation details
@@ -33,6 +39,10 @@ This guide explains the base repository. It is broken up in to sections that exp
 - The interfaces are implemented as Python Abstract Base Classes (ABCs) from `abc` in `src/mail_client_api/src/mail_client_api/client.py` and `message.py`.
 - Concrete implementations are regular classes that inherit from the ABCs, e.g. `GmailClient(mail_client_api.Client)` and `GmailMessage(mail_client_api.message.Message)` in `src/gmail_client_impl/src/gmail_client_impl/`.
 - The implementations use the `google-api-python-client` and `google-auth*` libraries to communicate with Gmail. The message parsing uses the standard library `email` package to decode RFC2047 and multipart messages.
+- The interfaces are implemented as Python Abstract Base Classes (ABCs) from abc in `src/chat_client_api/src/chat_client_api/client.py`, message.py, and channel.py.
+- Concrete implementations are regular classes that inherit from these ABCs, e.g. `DiscordClient(chat_client_api.Client)`, `DiscordMessage(chat_client_api.message.Message)`, and `DiscordChannel(chat_client_api.channel.Channel)` in `src/discord_client_impl/src/discord_client_impl/`.
+- The implementation uses the authlib library for OAuth2 authentication and httpx for making REST API calls to the Discord API.
+- Configuration for tokens and credentials is handled through environment variables.
 
 ### ABC vs typing.Protocol
 
@@ -47,7 +57,7 @@ Dependency injection (how an implementation is wired into the API)
 Example:
 
 ```py
-# in src/gmail_client_impl/src/gmail_client_impl/gmail_impl.py
+# in src/gmail_client_impl/src/gmail_client_impl/gmail_impl.py  
 def get_client_impl(*, interactive: bool = False) -> mail_client_api.Client:
     return GmailClient(interactive=interactive)
 
@@ -233,7 +243,7 @@ Pipeline overview (see `.circleci/config.yml`)
 - `lint` — runs ruff linting using the persisted venv.
 - `unit_test` — runs fast unit tests, coverage, and mypy. Tests must meet `--cov-fail-under=85`.
 - `circleci_test` — runs most tests (except local-credentials tests) and collects results.
-- `integration_test` — optional job that runs on protected branches (`main`, `develop`) and requires a CircleCI context containing `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, and `GMAIL_REFRESH_TOKEN`.
+- `integration_test` — optional job that runs on protected branches (`main`, `develop`) and requires a CircleCI context containing `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `DISCORD_CLIENT_ID` , `DISCORD_CLIENT_SECRET` , `DISCORD_BOT_TOKEN` `DISCORD_REDIRECT_URI`
 - `report_summary` — collects and prints summaries and artifacts.
 
 Triggers & contexts

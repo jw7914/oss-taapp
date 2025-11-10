@@ -9,26 +9,6 @@ This document describes the architecture and design of the service-based changes
 - `service_client_adapter` (adapter/shim): implements `mail_client_api.Client` by delegating to the generated client so user code does not have to change.
 - `gmail_client_impl` / `mail_client_api` (existing library code): the original in-process client and message implementations.
 
-**High-Level Design**
-
-```mermaid
-flowchart TB
-
-  UP["<b>User Program</b><br/>1. Imports mail_client_api.Client contract<br/>2. Calls get_client() normally"]
-
-  OA["<b>Option A: In-process (existing)</b><br/>1. Returns GmailClient implementation<br/>2. Calls Gmail directly via existing logic"]
-
-  OB["<b>Option B: Service Adapter (new)</b><br/>1. ServiceClientAdapter implements same contract<br/>2. Calls mail_client_service_api_client (HTTP client)<br/>3. FastAPI service endpoints<br/>4. Calls gmail_client_impl (same code as before)"]
-
-  KI["<b>Key Idea</b><br/><ul><li>get_messages(), get_message(), mark_as_read(), delete_message()</li><li>Works the same whether local or remote</li></ul>"]
-
-  UP --> OA
-  UP --> OB
-
-  OA --> KI
-  OB --> KI
-```
-
 **Key idea**: user code calls the same methods (get_messages, get_message, mark_as_read, delete_message) regardless of whether the implementation is local or remote.
 
 ## Components Added
@@ -294,3 +274,180 @@ I**nterface complian**ce
 
 - The repository contains tests that validate the `Client` contract via mocks (see `src/mail_client_service/tests/test_client_contract.py`) and adapter tests that ensure adapter methods forward the right parameters to generated API functions.
 - For stronger compliance the adapter can be extended to transform JSON response objects into concrete `Message` instances (by using `mail_client_api.message.get_message` factory). That was left intentionally simple for the homework and the provided tests pass with the current approach.
+
+# Design Document — Chat Client Service
+
+This part of the document describes the architecture and design of the Discord-based chat service implementation, following similar patterns to the mail service.
+
+## Architecture Overview
+
+- `chat_client_api`: Defines the abstract interface for chat operations
+- `discord_client_impl`: Discord-specific implementation using Discord's REST API
+- Future potential: Similar service-based architecture as mail service
+
+## Core Components
+
+### ChatClient API (`chat_client_api`)
+
+Defines core abstractions:
+```python
+class ChatClient(ABC):
+    @abstractmethod
+    def get_messages(self, channel_id: str, limit: int = 50) -> Iterator[ChatMessage]:
+        """Get messages from a channel."""
+        
+    @abstractmethod
+    def send_message(self, recipient_id: str, content: str) -> ChatMessage:
+        """Send a new message."""
+        
+    @abstractmethod 
+    def get_channel(self, channel_id: str) -> ChatChannel:
+        """Get channel details."""
+```
+
+### Discord Implementation (`discord_client_impl`)
+
+The Discord implementation uses:
+- OAuth2 authentication via `authlib`
+- HTTP client (`httpx`) for Discord REST API calls
+- Environment variables for configuration
+
+**Key Features:**
+- Token-based authentication (both OAuth2 and Bot tokens supported)
+- Rate limiting and error handling
+- Message/Channel object mapping
+
+## Authentication Flow
+
+1. **OAuth2 Setup**
+```python
+OAUTH2_AUTHORIZE_URL = "https://discord.com/api/oauth2/authorize"
+OAUTH2_TOKEN_URL = "https://discord.com/api/oauth2/token"
+DEFAULT_SCOPES = [
+    "identify",
+    "bot",
+    "messages.read"
+]
+```
+
+2. **Client Authentication**
+```python
+def __init__(
+    self,
+    access_token: str | None = None,
+    bot_token: str | None = None,
+    client_id: str | None = None,
+    client_secret: str | None = None,
+    redirect_uri: str | None = None,
+) -> None:
+    # Initialize OAuth2 client
+    # Set up HTTP client with base URL
+    # Configure authentication headers
+```
+
+## API Endpoints Used
+
+| Discord Endpoint | Purpose | Implementation Method |
+|-----------------|---------|----------------------|
+| `/channels/{channel.id}/messages` | Get messages | `get_messages()` |
+| `/channels/{channel.id}/messages` | Send message | `send_message()` |
+| `/channels/{channel.id}` | Get channel info | `get_channel()` |
+| `/users/@me` | Get current user | `get_current_user()` |
+
+## Error Handling
+
+The implementation maps Discord API errors to appropriate exceptions:
+
+| HTTP Status | Discord Error | Implementation Handling |
+|------------|---------------|------------------------|
+| 401 | Unauthorized | Authentication error |
+| 403 | Forbidden | Permission error |
+| 404 | Not Found | Resource not found |
+| 429 | Too Many Requests | Rate limit handling |
+
+## Message Format
+
+**Discord Message Structure:**
+```json
+{
+    "id": "123456789",
+    "channel_id": "channel123",
+    "content": "Hello World",
+    "author": {
+        "id": "user123",
+        "username": "example"
+    },
+    "timestamp": "2025-11-09T12:00:00.000Z"
+}
+```
+
+**Mapped to ChatMessage Interface:**
+```python
+class DiscordMessage(ChatMessage):
+    id: str
+    channel_id: str
+    content: str
+    author: str
+    timestamp: datetime
+```
+
+## Testing Strategy
+
+1. **Unit Tests** (`test_authentication.py`)
+   - OAuth2 flow testing
+   - Token management
+   - Error handling
+
+2. **Integration Tests**
+   - Mock Discord API responses
+   - Verify endpoint handling
+   - Test rate limiting
+
+3. **Test Fixtures**
+```python
+@pytest.fixture
+def mock_discord_client():
+    return SimpleNamespace(
+        get_messages=lambda channel_id, limit=50: iter([]),
+        send_message=lambda channel_id, content: None,
+        get_channel=lambda channel_id: None
+    )
+```
+
+## Future Enhancements
+
+1. **Service Layer**
+   - FastAPI service wrapping Discord client
+   - Generated API client
+   - Service adapter pattern
+
+2. **Websocket Support**
+   - Real-time message updates
+   - Gateway connection management
+
+3. **Enhanced Features**
+   - Message reactions
+   - File attachments
+   - Rich embeds
+
+## Configuration
+
+Environment Variables:
+```ini
+DISCORD_CLIENT_ID=your_client_id
+DISCORD_CLIENT_SECRET=your_client_secret
+DISCORD_BOT_TOKEN=your_bot_token
+DISCORD_REDIRECT_URI=http://localhost:8000/callback
+```
+
+## Dependencies
+
+```toml
+[tool.poetry.dependencies]
+python = "^3.11"
+httpx = "^0.25.0"
+authlib = "^1.2.0"
+python-dotenv = "^1.0.0"
+```
+
+This design document outlines the core architecture and implementation details of the Discord chat client, following similar patterns to the mail service while accounting for Discord-specific requirements and API patterns.

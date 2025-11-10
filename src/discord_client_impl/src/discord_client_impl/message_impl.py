@@ -8,6 +8,9 @@ from typing import Any
 
 from chat_client_api.message import ChatChannel, ChatMessage
 
+import chat_client_api
+from chat_client_api import message
+
 
 class DiscordMessage(ChatMessage):
     """Concrete implementation of ChatMessage for a Discord message."""
@@ -143,3 +146,14 @@ class DiscordChannel(ChatChannel):
             return int(self._raw_data.get("position", 0))
         except (TypeError, ValueError):
             return 0
+
+
+def get_chat_message_impl(msg_id: str, raw_data: str) -> message.ChatMessage:
+    """Return an instance of the concrete DiscordMessage implementation."""
+    return DiscordMessage(msg_id=msg_id, raw_data=raw_data)
+
+
+def register() -> None:
+    """Register the Discord message implementation with the message abstraction."""
+    message.get_message = get_chat_message_impl
+    chat_client_api.get_message = get_chat_message_impl

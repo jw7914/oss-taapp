@@ -16,6 +16,7 @@ from authlib.integrations.httpx_client import OAuth2Client  # type: ignore[impor
 from chat_client_api.client import ChatClient
 from chat_client_api.message import ChatChannel, ChatMessage
 
+import chat_client_api
 from discord_client_impl.message_impl import DiscordChannel, DiscordMessage
 
 logger = logging.getLogger(__name__)
@@ -99,9 +100,11 @@ class DiscordClient(ChatClient):
     def _set_token(self, token: str) -> None:
         """Set the access token for the API client."""
         self.access_token = token
-        self._http_client.headers.update({
-            "Authorization": f"Bot {self.bot_token}",
-        })
+        self._http_client.headers.update(
+            {
+                "Authorization": f"Bot {self.bot_token}",
+            },
+        )
 
     def get_authorization_url(
         self,
@@ -164,9 +167,10 @@ class DiscordClient(ChatClient):
             TypeError: If the API response is not in the expected dict format.
 
         """
-        response = self._http_client.get("/users/@me",
-                headers = {"Authorization": f"Bearer {self.access_token}"},
-                                         )
+        response = self._http_client.get(
+            "/users/@me",
+            headers={"Authorization": f"Bearer {self.access_token}"},
+        )
         response.raise_for_status()  # Raise HTTPError for bad responses
 
         json_data = response.json()
@@ -259,7 +263,7 @@ class DiscordClient(ChatClient):
         """
         try:
             for msg in self.get_messages(channel_id=channel_id, limit=100):
-                if getattr(msg, "message_id", getattr(msg, "id", None)) == message_id:
+                if msg.message_id == message_id:
                     return msg
         except httpx.HTTPError as exc:
             # Log per-channel failures so we can diagnose network/API issues
@@ -272,7 +276,6 @@ class DiscordClient(ChatClient):
 
         msg_text = f"Message with id {message_id} not found"
         raise RuntimeError(msg_text)
-
 
     def delete_message(self, channel_id: str, message_id: str) -> bool:
         """Attempt to delete a message by searching channels and calling DELETE.
@@ -337,3 +340,13 @@ class DiscordClient(ChatClient):
                 exc,
             )
             return DiscordChannel({})
+
+
+def get_chat_client_impl(*, access_token: str) -> chat_client_api.ChatClient:
+    """Return a configured :class:`DiscordClient` instance."""
+    return DiscordClient(access_token = access_token)
+
+
+def register() -> None:
+    """Register the Gmail client implementation with the chat client API."""
+    chat_client_api.get_client = get_chat_client_impl

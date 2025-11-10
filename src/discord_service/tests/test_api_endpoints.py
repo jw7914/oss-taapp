@@ -10,7 +10,9 @@ client = TestClient(main.app)
 
 
 def make_msg(id: str = "m1", channel_id: str = "c1", author: str = "a", content: str = "hi", ts: str = "t") -> SimpleNamespace:
-    return SimpleNamespace(message_id=id, id=id, channel_id=channel_id, author=author, author_username=author, content=content, timestamp=ts)
+    return SimpleNamespace(
+        message_id=id, id=id, channel_id=channel_id, author=author, author_username=author, content=content, timestamp=ts
+    )
 
 
 def make_channel(id: str = "c1", name: str = "chan", type_: int = 1, pos: int = 0) -> SimpleNamespace:
@@ -25,7 +27,10 @@ def test_root_returns_welcome() -> None:
 
 def test_login_redirects_with_scopes(monkeypatch: pytest.MonkeyPatch) -> None:
     # stub DiscordClient.get_authorization_url
-    monkeypatch.setattr("discord_service.main.DiscordClient", lambda *args, **kwargs: SimpleNamespace(get_authorization_url=lambda scopes=None: "https://auth"))
+    monkeypatch.setattr(
+        "discord_service.main.DiscordClient",
+        lambda *args, **kwargs: SimpleNamespace(get_authorization_url=lambda scopes=None: "https://auth"),
+    )
     r = client.get("/login?scopes=read%20write", follow_redirects=False)
     assert r.status_code == HTTPStatus.FOUND
     assert r.headers["Location"] == "https://auth"
@@ -74,6 +79,7 @@ def test_delete_message_various_responses() -> None:
     class FakeHTTP:
         def delete(self, path: str) -> SimpleNamespace:
             return SimpleNamespace(status_code=204, text="")
+
     main.app.state.client = SimpleNamespace(_http_client=FakeHTTP())
     r2 = client.delete("/channels/c1/messages/m1")
     assert r2.status_code == HTTPStatus.OK
@@ -82,6 +88,7 @@ def test_delete_message_various_responses() -> None:
     class ForbiddenHTTP:
         def delete(self, path: str) -> SimpleNamespace:
             return SimpleNamespace(status_code=403, text="forbidden")
+
     main.app.state.client = SimpleNamespace(_http_client=ForbiddenHTTP())
     r3 = client.delete("/channels/c1/messages/m1")
     assert r3.status_code == HTTPStatus.FORBIDDEN
@@ -90,6 +97,7 @@ def test_delete_message_various_responses() -> None:
     class NotFoundHTTP:
         def delete(self, path: str) -> SimpleNamespace:
             return SimpleNamespace(status_code=404, text="nf")
+
     main.app.state.client = SimpleNamespace(_http_client=NotFoundHTTP())
     r4 = client.delete("/channels/c1/messages/m1")
     assert r4.status_code == HTTPStatus.NOT_FOUND
@@ -98,6 +106,7 @@ def test_delete_message_various_responses() -> None:
     class OtherHTTP:
         def delete(self, path: str) -> SimpleNamespace:
             return SimpleNamespace(status_code=500, text="err")
+
     main.app.state.client = SimpleNamespace(_http_client=OtherHTTP())
     r5 = client.delete("/channels/c1/messages/m1")
     assert r5.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

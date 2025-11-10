@@ -1,0 +1,5 @@
+name = "discord_adapter"
+version = "0.1.0"
+description = "Adapter that exposes the chat_client_api.ChatClient interface by calling the discord service API client."
+authors = ["oss-taapp"]
+packages = ["src/discord_adapter"]

@@ -45,18 +45,6 @@ packages = ["src/discord_client_impl"]
 [tool.hatch.build.targets.wheel.force-include]
 "src/discord_client_impl/py.typed" = "discord_client_impl/py.typed"
 
-[tool.ruff]
-line-length = 100  # Default formatting width
-target-version = "py311"  # Adjust based on actual Python version
-extend = "../../pyproject.toml"
-
-[tool.ruff.lint]
-ignore = []
-[tool.mypy]
-# Local mypy settings for this package. Keep most checks strict but silence
-# missing stubs for authlib's httpx integration (no published types as of now).
-ignore_missing_imports = false
-explicit_package_bases = true
 
 [tool.mypy."authlib.integrations.httpx_client"]
 ignore_missing_imports = true

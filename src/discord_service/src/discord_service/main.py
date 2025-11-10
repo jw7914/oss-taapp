@@ -187,7 +187,7 @@ def logout() -> JSONResponse:
     return resp
 
 
-def serialize_message(msg: DiscordMessage) -> dict[str,str]:
+def serialize_message(msg: DiscordMessage) -> dict[str, str]:
     # ChatMessage implementations provide properties defined by chat_client_api.message
     return {
         "id": getattr(msg, "message_id", getattr(msg, "id", "")),
@@ -198,7 +198,8 @@ def serialize_message(msg: DiscordMessage) -> dict[str,str]:
         "timestamp": getattr(msg, "timestamp", ""),
     }
 
-def serialize_channel(ch: DiscordChannel) -> dict[str,Any]:
+
+def serialize_channel(ch: DiscordChannel) -> dict[str, Any]:
     return {
         "id": getattr(ch, "channel_id", getattr(ch, "id", "")),
         "name": getattr(ch, "channel_name", getattr(ch, "name", "")),
@@ -206,11 +207,13 @@ def serialize_channel(ch: DiscordChannel) -> dict[str,Any]:
         "position": getattr(ch, "channel_position", None),
     }
 
-def serialize_users(user: dict[str,str]) -> dict[str,str]:
+
+def serialize_users(user: dict[str, str]) -> dict[str, str]:
     return {
         "id": user.get("id", ""),
         "username": user.get("username", ""),
     }
+
 
 @app.get("/user", tags=["User"], summary="Get current user info")
 def get_current_user() -> JSONResponse:
@@ -225,10 +228,13 @@ def get_current_user() -> JSONResponse:
 
 
 @app.get("/channels/{channel_id}/messages", tags=["Messages"], summary="List messages in a channel")
-def list_channel_messages(channel_id: str, limit: int = Query(50, ge=1, le=100),) -> JSONResponse:
-    try:    
-        messages = list(app.state.client.get_messages(channel_id=channel_id ,limit=limit))
-        serialized = [serialize_message(m) for m in messages]   
+def list_channel_messages(
+    channel_id: str,
+    limit: int = Query(50, ge=1, le=100),
+) -> JSONResponse:
+    try:
+        messages = list(app.state.client.get_messages(channel_id=channel_id, limit=limit))
+        serialized = [serialize_message(m) for m in messages]
         return JSONResponse(status_code=status.HTTP_200_OK, content={"messages": serialized, "status": "success"})
     except Exception as e:
         raise HTTPException(
@@ -256,9 +262,7 @@ def send_message(recipient_id: str, content: str = Query(..., description="Messa
     summary="Get message by id",
     description="Requires `channel_id` query parameter to scope the search",
 )
-def get_message(
-    message_id: str, channel_id: str 
-) -> JSONResponse:
+def get_message(message_id: str, channel_id: str) -> JSONResponse:
     if channel_id is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -338,23 +342,29 @@ def delete_message(channel_id: str, message_id: str) -> JSONResponse:
             detail={"error": "Failed to delete message", "message": str(e), "status": "error"},
         )
 
+
 @app.get("/serverusers/{guild_id}", tags=["User"], summary="Retrieves channel info")
 def get_users(guild_id: str) -> JSONResponse:
-    try:    
-        users = app.state.client.get_users(guild_id = guild_id)
-        user_list = [serialize_users(u['user']) for u in users]
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"users": user_list , "status": "success"})
-    except Exception as e:
-        raise HTTPException( 
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Failed to get channel", "message": str(e), "status": "error"})
-
-@app.get("/channels/{channel_id}", tags=["Channel"], summary="Retrieves channel info")
-def get_channel(channel_id: str) -> JSONResponse:
-    try:    
-        channel = app.state.client.get_channel(channel_id=channel_id)
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"channel_info": serialize_channel(channel) , "status": "success"})
+    try:
+        users = app.state.client.get_users(guild_id=guild_id)
+        user_list = [serialize_users(u["user"]) for u in users]
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"users": user_list, "status": "success"})
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "Failed to get channel", "message": str(e), "status": "error"})
+            detail={"error": "Failed to get channel", "message": str(e), "status": "error"},
+        )
+
+
+@app.get("/channels/{channel_id}", tags=["Channel"], summary="Retrieves channel info")
+def get_channel(channel_id: str) -> JSONResponse:
+    try:
+        channel = app.state.client.get_channel(channel_id=channel_id)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK, content={"channel_info": serialize_channel(channel), "status": "success"}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "Failed to get channel", "message": str(e), "status": "error"},
+        )

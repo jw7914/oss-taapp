@@ -1,4 +1,4 @@
-# Python Application Template: A Component-Based Mail Client
+# Python Application Template: A Component-Based Multi Purpose Client
 
 [![CircleCI](https://circleci.com/gh/ivanearisty/oss-taapp.svg?style=shield)](https://circleci.com/gh/ivanearisty/oss-taapp)
 [![Coverage](https://img.shields.io/badge/coverage-85%2B%25-brightgreen)](https://circleci.com/gh/ivanearisty/oss-taapp)
@@ -21,26 +21,38 @@ This project is built on the principle of "programming integrated over time." Th
 
 The project is a `uv` workspace containing four primary packages:
 
-3.  **`cht_client_api`**: Defines the abstract `Client` base class (ABC). This is the contract for what actions a mail client can perform (e.g., `get_messages`).
-4.  **`discord_client_impl`**: Provides the class, a concrete implementation that uses the Google API to perform the actions defined in the `Client` abstraction.
+1.  **`mail_client_api`**: Defines the abstract `Client` base class (ABC). This is the contract for what actions a mail client can perform (e.g., `get_messages`).
+2.  **`gmail_client_impl`**: Provides the `GmailClient` class, a concrete implementation that uses the Google API to perform the actions defined in the `Client` abstraction.
+3.  **`discord_client_impl`**: Provides the `DiscordClient` class, a concrete implementation that uses the Discord API to perform the actions defined in the `ChatClient` abstraction.
 
 ## Project Structure
 
 ```
 ta-assignment/
-├── src/                          # Source packages (uv workspace members)
-│   ├── chat_client_api/          # Abstract chat client base class (ABC)
-│   ├── discord_client_impl/      # Discord-specific client implementation
-│   └── discord_service/          # FastAPI service exposing endpoints
-├── tests/                        # Integration and E2E tests
-│   ├── integration/              # Component integration tests
-│   └── e2e/                      # End-to-end application tests
-├── docs/                         # Documentation source files
-├── .circleci/                    # CircleCI configuration
-├── main.py                       # Main application entry point
-├── pyproject.toml               # Project configuration (dependencies, tools)
-├── uv.lock                      # Locked dependency versions
-└── credentials.json             # Google OAuth credentials (local only)
+├── src/                                    # Source packages (uv workspace members)
+│   ├── chat_client_api/                    # Abstract chat client base class (ABC)
+│   ├── discord_client_impl/               # Discord-specific chat implementation
+│   │   └── src/
+│   │       └── discord_client_impl/
+│   ├── gmail_client_impl/                 # Gmail-specific mail implementation
+│   │   └── src/
+│   │       └── gmail_client_impl/
+│   ├── mail_client_api/                   # Abstract mail client base class (ABC)
+│   ├── mail_client_service/               # FastAPI service for mail clients
+│   │   └── src/
+│   │       └── mail_client_service/
+│   └── mail_client_service_api_client/    # Generated API client for service
+│       └── src/
+│           └── mail_client_service_api_client/
+├── tests/                                  # Integration and E2E tests
+│   ├── integration/                        # Component integration tests
+│   └── e2e/                               # End-to-end application tests
+├── docs/                                   # Documentation source files
+├── .circleci/                             # CircleCI configuration  
+├── main.py                                # Main application entry point
+├── pyproject.toml                         # Project configuration
+├── uv.lock                                # Locked dependency versions
+└── credentials.json                       # OAuth credentials (local only)
 ```
 
 ## Project Setup
@@ -78,16 +90,30 @@ ta-assignment/
       export DISCORD_CLIENT_ID="your_client_id"
       export DISCORD_CLIENT_SECRET="your_client_secret"
       ```
-    - **Important:** Credential files contain secrets and are ignored by `.gitignore`.
+    - **Important**: Credential files contain secrets and are ignored by `.gitignore`.
 
-4.  **Create and Sync the Virtual Environment:**
+4.  **Set Up Discord Credentials:**
+    - Follow the Discord Developer Portal instructions to create an application and enable the Discord API.
+    - Download your bot token and store it securely.
+    - Rename your token file to discord_token.json and place it in the root of this project.
+
+    - **Alternative**: For CI/CD environments, you can use environment variables instead:
+    ```bash
+    export DISCORD_BOT_TOKEN="your_bot_token"
+    export DISCORD_CLIENT_ID="your_client_id"
+    export DISCORD_CLIENT_SECRET="your_client_secret"
+    ```
+
+    - **Important**: Token files and secrets must be kept private — they are ignored by .gitignore.
+
+5.  **Create and Sync the Virtual Environment:**
     This single command creates a `.venv` folder and installs all packages (including workspace members and development tools) defined in `uv.lock`.
 
     ```bash
     uv sync --all-packages --extra dev
     ```
 
-5.  **Activate the Virtual Environment:**
+6.  **Activate the Virtual Environment:**
 
     ```bash
     # macOS / Linux
@@ -95,6 +121,13 @@ ta-assignment/
     # Windows (PowerShell)
     .venv\Scripts\Activate.ps1
     ```
+
+7.  **Perform Initial Authentication:**
+    Run the main application once to perform the interactive OAuth flow. This will open a browser window for you to grant permission.
+    ```bash
+    uv run python main.py
+    ```
+    After you approve, a `token.json` file will be created. This file is also ignored by `.gitignore` and will be used for authentication in subsequent runs.
 
 ## Development Workflow
 
