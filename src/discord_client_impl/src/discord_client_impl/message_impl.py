@@ -5,7 +5,7 @@ abstract base classes from the chat_client_api.
 """
 
 from typing import Any
-
+import json
 from chat_client_api.message import ChatChannel, ChatMessage
 
 import chat_client_api
@@ -148,9 +148,28 @@ class DiscordChannel(ChatChannel):
             return 0
 
 
-def get_chat_message_impl(msg_id: str, raw_data: str) -> message.ChatMessage:
-    """Return an instance of the concrete DiscordMessage implementation."""
-    return DiscordMessage(msg_id=msg_id, raw_data=raw_data)
+def get_chat_message_impl(message_id: str, raw: str) -> message.ChatMessage:
+    """
+    Accept `raw` as a string (the public API expected type). Coerce to a dict
+    for DiscordMessage construction. If callers pass a dict at runtime we
+    handle that too (using a type ignore).
+    """
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+            raw_data: dict[str, Any] = parsed if isinstance(parsed, dict) else {"content": parsed}
+        except Exception:
+            raw_data = {"content": raw}
+    elif isinstance(raw, dict):
+        # runtime caller may pass a dict — accept it but silence type checker
+        raw_data = raw  # type: ignore[assignment]
+    else:
+        raw_data = {"content": str(raw)}
+
+    if "id" not in raw_data:
+        raw_data = {**raw_data, "id": message_id}
+
+    return DiscordMessage(raw_data=raw_data)
 
 
 def register() -> None:

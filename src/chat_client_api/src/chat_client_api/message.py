@@ -38,6 +38,12 @@ class ChatMessage(ABC):
 
     @property
     @abstractmethod
+    def edited_timestamp(self) -> str | None:
+        """Return the date the message was last edited, or None if never edited."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
     def content(self) -> str:
         """Return the plain text content of the message."""
         raise NotImplementedError
@@ -67,7 +73,7 @@ class ChatChannel(ABC):
     @property
     @abstractmethod
     def channel_position(self) -> int:
-        """Return the type of the channel."""
+        """Return the position of the channel in the channel."""
         raise NotImplementedError
 
 

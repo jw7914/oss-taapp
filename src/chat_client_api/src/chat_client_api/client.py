@@ -12,8 +12,23 @@ class ChatClient(ABC):
     """Abstract base class representing a chat client for chat operations."""
 
     @abstractmethod
+    def get_channels(self) -> Iterator[Channel]:
+        """Return an iterator over all channels visible to the client."""
+        raise NotImplementedError
+    
+    @abstractmethod
+    def get_channel(self, channel_id: str) -> Channel:
+        """Retrieve a specific channel by its unique identifier."""
+        raise NotImplementedError
+    
+    @abstractmethod
     def get_message(self, channel_id: str, message_id: str) -> ChatMessage:
         """Return a message by its ID."""
+        raise NotImplementedError
+    
+    @abstractmethod
+    def send_message(self, channel_id: str, content: str) -> ChatMessage:
+        """Send a new message with the given content to the specified channel and return the created message object."""
         raise NotImplementedError
 
     @abstractmethod
