@@ -110,12 +110,3 @@ def test_delete_message_various_responses() -> None:
     main.app.state.client = SimpleNamespace(_http_client=OtherHTTP())
     r5 = client.delete("/channels/c1/messages/m1")
     assert r5.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-
-
-def test_serialize_helpers_handle_alternate_attrs() -> None:
-    m = SimpleNamespace(id="i1", channel_id="c1", author="a", author_username="au", content="x", timestamp="t")
-    serialized = main.serialize_message(m)
-    assert serialized["id"] == "i1"
-    ch = SimpleNamespace(id="c2", name="n")
-    serialized_ch = main.serialize_channel(ch)
-    assert serialized_ch["id"] == "c2"

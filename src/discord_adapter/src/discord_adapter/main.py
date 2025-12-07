@@ -192,7 +192,8 @@ class DiscordAdapter(ChatClient):
             except (json.JSONDecodeError, UnicodeDecodeError):
                 # Fall back to empty dict if parsing fails
                 return {}
-        return content
+        else:
+            return content
 
     def _extract_token_from_mapping(self, mapping: object) -> str | None:
         """Return the first token-like value found in a mapping, or None."""
@@ -252,8 +253,6 @@ class DiscordAdapter(ChatClient):
         # Expect a list or dict with 'users'
         if isinstance(content, list):
             return content
-        if isinstance(content, dict) and "users" in content:
-            return content["users"]
         return []
 
     def get_channel(self, channel_id: str) -> ChatChannel:
