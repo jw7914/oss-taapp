@@ -8,6 +8,7 @@ dependencies = [
     "fastapi[standard]>=0.104.0",
     "uvicorn[standard]>=0.24.0",
     "chat-client-api",
+    "aiohttp>=3.9.0",
     "discord-client-impl",
 ]
 
