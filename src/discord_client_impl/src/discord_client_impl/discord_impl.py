@@ -5,13 +5,20 @@ It handles OAuth2 authentication and provides methods to interact with Discord.
 
 """
 
+import asyncio
+import json
 import logging
 import os
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, ClassVar
 
+from collections.abc import Iterator, Callable
+from typing import Any, Optional
+
+import aiohttp
 import httpx
+import websockets
 from authlib.integrations.httpx_client import OAuth2Client  # type: ignore[import-untyped]
 from chat_client_api.client import ChatClient
 from chat_client_api.message import ChatChannel, ChatMessage
@@ -37,6 +44,144 @@ except ImportError:
                     key, value = line.split("=", 1)
                     os.environ[key.strip()] = value.strip()
 
+
+class DiscordGateway:
+    DISCORD_GATEWAY_URL = "https://discord.com/api/v10/gateway/bot"
+
+    def __init__(self, token: str | None = None) -> None:
+        self.token: str = token or os.environ.get("DISCORD_BOT_TOKEN")
+        self.ws: Optional[websockets.WebSocketClientProtocol] = None
+        self.sequence: Optional[int] = None
+        self.session_id: Optional[str] = None
+        self.subscribers: dict[str, list[Callable[[dict[str, Any]], Any]]] = {}
+        self.heartbeat_interval: Optional[int] = None
+        self._heartbeat_task: Optional[asyncio.Task] = None
+        self.running: bool = False
+
+    def subscribe(self, event_name: str, callback: Callable[[dict[str, Any]], Any]) -> None:
+        if event_name not in self.subscribers:
+            self.subscribers[event_name] = []
+        self.subscribers[event_name].append(callback)
+
+    def unsubscribe(self, event_name: str, callback: Callable[[dict[str, Any]], Any]) -> None:
+        if event_name in self.subscribers:
+            self.subscribers[event_name].remove(callback)
+
+    async def _emit(self, event_name: str, data: dict[str, Any]) -> None:
+        """Call subscriber callbacks."""
+        if event_name in self.subscribers:
+            for callback in self.subscribers[event_name]:
+                try:
+                    if asyncio.iscoroutinefunction(callback):
+                        await callback(data)
+                    else:
+                        # run sync callbacks without blocking
+                        await asyncio.get_running_loop().run_in_executor(None, callback, data)
+                except Exception as e:
+                    print(f"Error in {event_name} callback: {e}")
+
+    async def _heartbeat(self) -> None:
+        try:
+            while self.running:
+                await asyncio.sleep(self.heartbeat_interval / 1000)
+                if self.ws and not self.ws.closed:
+                    heartbeat = {"op": 1, "d": self.sequence}
+                    await self.ws.send(json.dumps(heartbeat))
+        except asyncio.CancelledError:
+            return
+
+
+    async def _identify(self) -> None:
+        payload = {
+            "op": 2,
+            "d": {
+                "token": self.token,
+                "intents": 513,  # GUILDS + GUILD_MESSAGES
+                "properties": {"os": "linux", "browser": "custom_bot", "device": "custom_bot"},
+            },
+        }
+        await self.ws.send(json.dumps(payload))
+
+
+    async def _handle_message(self, message: str) -> None:
+        data: dict[str, Any] = json.loads(message)
+        op: int = data["op"]
+
+        if data.get("s"):
+            self.sequence = data["s"]
+
+        if op == 10:  # Hello response
+            self.heartbeat_interval = data["d"]["heartbeat_interval"]
+            self._heartbeat_task = asyncio.create_task(self._heartbeat())
+            await self._identify()
+
+        elif op == 11:  # Heartbeat
+            pass
+
+        elif op == 0:  # Dispatch
+            event_name = data["t"]
+            event_data = data["d"]
+
+            if event_name == "READY":
+                self.session_id = event_data["session_id"]
+                print(f"Connected as {event_data['user']['username']}#{event_data['user']['discriminator']}")
+
+            await self._emit(event_name, event_data)
+
+        elif op == 9:  # Invalid session
+            print("Invalid session, re-identifying in 5s...")
+            await asyncio.sleep(5)
+            await self._identify()
+
+    async def _connect_and_listen(self) -> None:
+        # Query the gateway URL
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                self.DISCORD_GATEWAY_URL,
+                headers={"Authorization": f"Bot {self.token}"},
+            ) as resp:
+                if resp.status != 200:
+                    raise Exception(f"Failed to get gateway: {resp.status}")
+                gateway_data = await resp.json()
+                url = gateway_data["url"]
+
+        # Connect to WebSocket
+        async with websockets.connect(f"{url}?v=10&encoding=json", max_size=None) as ws:
+            self.ws = ws
+            print(f"Connected to Discord Gateway: {url}")
+
+            async for message in ws:
+                await self._handle_message(message)
+
+   
+    async def start(self) -> None:
+        """Start the gateway."""
+        self.running = True
+
+        while self.running:
+            try:
+                await self._connect_and_listen()
+            except Exception as e:
+                print(f"Connection error: {e}")
+
+            if not self.running:
+                break
+            print("Reconnecting in 5 seconds...")
+            await asyncio.sleep(5)
+
+    async def stop(self) -> None:
+        """Clean async shutdown."""
+        self.running = False
+
+        if self.ws:
+            await self.ws.close()
+
+        if self._heartbeat_task:
+            self._heartbeat_task.cancel()
+            try:
+                await self._heartbeat_task
+            except asyncio.CancelledError:
+                pass
 
 class DiscordClient(ChatClient):
     """Concrete implementation of the Client abstraction using Discord API."""
@@ -340,6 +485,23 @@ class DiscordClient(ChatClient):
                 exc,
             )
             return DiscordChannel({})
+    def get_channels(self) -> Iterator[ChatChannel]:
+        """Get channels from all channels visible to client.
+
+        Returns a Iterative DiscordChannel object.
+        """
+        try:
+            response = self._http_client.get("/users/@me/channels")
+            response.raise_for_status()
+            channels = response.json()
+
+            for channel_data in channels:
+                yield DiscordChannel(channel_data)
+        except httpx.HTTPError as exc:
+            logger.debug(
+                "Failed to get channels: %s",
+                exc,
+            )
 
 
 def get_chat_client_impl(*, access_token: str) -> chat_client_api.ChatClient:

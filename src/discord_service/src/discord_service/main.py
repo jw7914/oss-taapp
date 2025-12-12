@@ -368,3 +368,17 @@ def get_channel(channel_id: str) -> JSONResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "Failed to get channel", "message": str(e), "status": "error"},
         )
+
+
+@app.get("/channels/{channel_id}", tags=["Channel"], summary="Retrieves multiple channels")
+def get_channels(channel_id: str) -> JSONResponse:
+    try:
+        channels = app.state.client.get_channels()
+        return JSONResponse(
+            status_code=status.HTTP_200_OK, content={"channel_info": serialize_channel(channels), "status": "success"}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "Failed to get channel", "message": str(e), "status": "error"},
+        )
