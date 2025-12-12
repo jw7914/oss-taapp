@@ -357,6 +357,8 @@ class DiscordClient(ChatClient):
         response.raise_for_status()
 
         message_data_list = response.json()
+        logger.debug(f"get_messages raw response ({len(message_data_list)} messages): {message_data_list}")
+        
         if not isinstance(message_data_list, list):
             logger.warning(
                 "Expected a list from /channels/.../messages, got %s",
@@ -409,6 +411,7 @@ class DiscordClient(ChatClient):
         try:
             for msg in self.get_messages(channel_id=channel_id, limit=100):
                 if msg.message_id == message_id:
+                    logger.debug(f"Found message! Content: {repr(msg.content)}")
                     return msg
         except httpx.HTTPError as exc:
             # Log per-channel failures so we can diagnose network/API issues
