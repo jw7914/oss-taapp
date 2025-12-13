@@ -27,12 +27,22 @@ async def listen_for_messages() -> None:
         def on_message_create(data: dict[str, Any]) -> None:
             print(f"Message from {data['author']['username']}: {data['content']}")
 
+            for mention in data['mentions']:
+                if app.state.client.client_id in mention['id']:
+                    process_message(data)
+            
         gateway.subscribe("MESSAGE_CREATE", on_message_create)
         await gateway.start()
     except asyncio.CancelledError:
         print("Gateway listener cancelled")
     except Exception as e:
         print(f"Gateway error: {e}")
+
+def process_message(data: dict[str, Any]) -> None:
+     """If the discord bot is pinged the message will be processed
+    """
+     app.state.client.send_message(recipient_id=data["author"]["id"], content=data["content"])
+
 
 
 @asynccontextmanager
