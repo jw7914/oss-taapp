@@ -10,6 +10,7 @@ dependencies = [
     "chat-client-api",
     "aiohttp>=3.9.0",
     "discord-client-impl",
+    "prometheus-fastapi-instrumentator>=6.1.0",
 ]
 
 [tool.uv.sources]

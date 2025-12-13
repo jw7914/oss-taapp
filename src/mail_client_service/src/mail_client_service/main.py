@@ -16,6 +16,7 @@ from typing import Callable, Awaitable
 
 from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse, Response
+from prometheus_fastapi_instrumentator import Instrumentator
 
 import gmail_client_impl  # noqa: F401
 import mail_client_api
@@ -23,6 +24,9 @@ import mail_client_api
 app = FastAPI(
     title="Mail Client Service API", description="A Restful FastAPI service for managing Gmail messages", version="1.0.0"
 )
+
+# Expose Prometheus metrics and show the endpoint in the OpenAPI docs under the General tag.
+Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=True, tags=["General"])
 
 
 @app.middleware("http")
@@ -41,6 +45,7 @@ async def auth_middleware(request: Request, call_next: Callable[[Request], Await
         "/openapi.json",
         "/docs",
         "/redoc",
+        "/metrics",
     }
 
     # Also allow paths under /docs/static or other swagger UI assets by prefix check

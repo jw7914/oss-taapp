@@ -9,6 +9,7 @@ dependencies = [
     "uvicorn[standard]>=0.24.0",
     "mail-client-api",
     "gmail-client-impl",
+    "prometheus-fastapi-instrumentator>=6.1.0",
 ]
 
 [tool.uv.sources]
