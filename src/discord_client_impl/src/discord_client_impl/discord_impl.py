@@ -92,11 +92,13 @@ class DiscordGateway:
 
 
     async def _identify(self) -> None:
+        # GUILDS (1) + GUILD_MESSAGES (512) + MESSAGE_CONTENT (32768) = 33281
+        intents = 1 | 512 | 32768
         payload = {
             "op": 2,
             "d": {
                 "token": self.token,
-                "intents": 513,  # GUILDS + GUILD_MESSAGES
+                "intents": intents, 
                 "properties": {"os": "linux", "browser": "custom_bot", "device": "custom_bot"},
             },
         }

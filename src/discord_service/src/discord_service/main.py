@@ -25,7 +25,7 @@ async def listen_for_messages() -> None:
         gateway = DiscordGateway(token=app.state.client.bot_token)
 
         def on_message_create(data: dict[str, Any]) -> None:
-            print(f"MESSAGE HEARD: Message from {data['author']['username']}: {data['content']}\n Data: {data}")
+            print(f"Message from {data['author']['username']}: {data['content']}")
 
         gateway.subscribe("MESSAGE_CREATE", on_message_create)
         await gateway.start()
