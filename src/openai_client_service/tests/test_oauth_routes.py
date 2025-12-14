@@ -162,4 +162,3 @@ def test_whoami_returns_subject(oauth_client: TestClient) -> None:
     resp = oauth_client.get("/auth/whoami")
     assert resp.status_code == status.HTTP_200_OK
     assert resp.json() == {"subject": "subject-3"}
-

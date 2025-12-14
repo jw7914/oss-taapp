@@ -11,7 +11,6 @@ members = [
     "ai-service-api",
     "chat-client-api",
     "discord-client-impl",
-    "discord-client-service",
     "final-service",
     "gmail-client-impl",
     "mail-client-api",
@@ -568,46 +567,6 @@ requires-dist = [
 provides-extras = ["test"]
 
 [[package]]
-name = "discord-client-service"
-version = "0.1.0"
-source = { editable = "src/discord_service" }
-dependencies = [
-    { name = "aiohttp" },
-    { name = "chat-client-api" },
-    { name = "discord-client-impl" },
-    { name = "fastapi", extra = ["standard"] },
-    { name = "prometheus-fastapi-instrumentator" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "httpx" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiohttp", specifier = ">=3.9.0" },
-    { name = "chat-client-api", editable = "src/chat_client_api" },
-    { name = "discord-client-impl", editable = "src/discord_client_impl" },
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.104.0" },
-    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.25.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.17.0" },
-    { name = "prometheus-fastapi-instrumentator", specifier = ">=6.1.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.1" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=6.2.1" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12.7" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.24.0" },
-]
-provides-extras = ["dev"]
-
-[[package]]
 name = "distro"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -715,6 +674,43 @@ wheels = [
 name = "final-service"
 version = "0.1.0"
 source = { editable = "src/final_service" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "chat-client-api" },
+    { name = "discord-client-impl" },
+    { name = "fastapi", extra = ["standard"] },
+    { name = "openai-client-impl" },
+    { name = "prometheus-fastapi-instrumentator" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiohttp", specifier = ">=3.9.0" },
+    { name = "chat-client-api", editable = "src/chat_client_api" },
+    { name = "discord-client-impl", editable = "src/discord_client_impl" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.104.0" },
+    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.25.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.17.0" },
+    { name = "openai-client-impl", editable = "src/openai_client_impl" },
+    { name = "prometheus-fastapi-instrumentator", specifier = ">=6.1.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.1" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=6.2.1" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12.7" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.24.0" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "frozenlist"

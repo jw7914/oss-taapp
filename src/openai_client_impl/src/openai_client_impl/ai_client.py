@@ -38,7 +38,7 @@ class AIClientImpl:
             MissingOpenAIKeyError: If user hasn't set an API key.
 
         """
-        key = get_openai_key(self.subject)  
+        key = get_openai_key(self.subject)
         if not key:
             error_msg = "OpenAI API key is not set for this user. Set it via the service."
             raise MissingOpenAIKeyError(error_msg)

@@ -1,4 +1,5 @@
 """Tests for Discord message and channel implementations."""
+
 from discord_client_impl.message_impl import DiscordChannel, DiscordMessage, get_chat_message_impl, register
 
 

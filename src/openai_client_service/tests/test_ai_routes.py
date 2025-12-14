@@ -18,6 +18,7 @@ from openai_client_service.src.openai_client_service.dependencies import (
 try:
     from openai_client_impl import MissingOpenAIKeyError
 except ImportError:  # pragma: no cover
+
     class MissingOpenAIKeyError(Exception):
         """Fallback error used when openai_client_impl is unavailable."""
 

@@ -185,4 +185,3 @@ class OpenAIServiceAdapter:
             if status_str == "ok":
                 return True
         return False
-

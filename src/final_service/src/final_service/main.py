@@ -1,7 +1,6 @@
 """Discord and AI implementation."""
 
-
-#UPDATE DEPENDENCIES
+# UPDATE DEPENDENCIES
 import asyncio
 import os
 from collections.abc import AsyncGenerator, Awaitable, Callable
@@ -23,7 +22,7 @@ async def listen_for_messages() -> None:
     """Listen for new messages in real-time via Discord Gateway.
     Only starts if app.state.client is available (user is logged in).
 
-    """ 
+    """
     try:
         # Wait for client to be available (user logs in)
         while not hasattr(app.state, "client") or app.state.client is None:
@@ -34,8 +33,8 @@ async def listen_for_messages() -> None:
         def on_message_create(data: dict[str, Any]) -> None:
             print(f"Message from {data['author']['username']}: {data['content']}")
 
-            for mention in data['mentions']:
-                if app.state.client.client_id in mention['id']:
+            for mention in data["mentions"]:
+                if app.state.client.client_id in mention["id"]:
                     process_message(data)
 
         gateway.subscribe("MESSAGE_CREATE", on_message_create)
@@ -45,17 +44,17 @@ async def listen_for_messages() -> None:
     except Exception as e:
         print(f"Gateway error: {e}")
 
+
 def process_message(data: dict[str, Any]) -> None:
     """If the discord bot is pinged the message will be processed."""
-    
+
     KEY = os.getenv("OPENAPI_KEY")
-    set_openai_key("user",KEY)
+    set_openai_key("user", KEY)
     ai_client = AIClientImpl("user")
     response = ai_client.generate_response(data["content"])
     result = response.content
-    
-    app.state.client.send_message(recipient_id=data["author"]["id"], content=result)
 
+    app.state.client.send_message(recipient_id=data["author"]["id"], content=result)
 
 
 @asynccontextmanager
@@ -85,6 +84,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
 
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
@@ -197,6 +197,7 @@ def auth_callback(code: str | None = Query(None, description="Authorization code
     finally:
         app.state.auth_in_progress = False
 
+
 @app.get("/user", tags=["User"], summary="Get current user info")
 def get_current_user() -> JSONResponse:
     try:
@@ -207,6 +208,7 @@ def get_current_user() -> JSONResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "Failed to get user", "message": str(e), "status": "error"},
         )
+
 
 @app.get("/health", tags=["General"], summary="Health check")
 def health() -> JSONResponse:

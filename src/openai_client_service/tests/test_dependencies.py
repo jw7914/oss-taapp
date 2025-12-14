@@ -51,4 +51,3 @@ async def test_get_ai_client_uses_subject(monkeypatch: pytest.MonkeyPatch) -> No
     client = dependencies.get_ai_client(subject=subject)
     assert isinstance(client, DummyClient)
     assert client.subject == "carol"
-

@@ -1,4 +1,5 @@
 """Response and Conversation implementations for OpenAI client."""
+
 from openai_service_api.response import (
     Conversation as ConversationABC,
 )

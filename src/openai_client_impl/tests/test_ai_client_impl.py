@@ -224,7 +224,7 @@ def test_get_conversation_success(monkeypatch: pytest.MonkeyPatch) -> None:
         [
             {"role": "user", "content": "hello"},
             {"role": "assistant", "content": "hi"},
-        ]
+        ],
     )
     captured["conversation_lookup"] = {"conv-42": ("conv-42", DEFAULT_CREATED_AT, messages_json)}
 
@@ -283,4 +283,3 @@ def test_missing_openai_key_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("openai_client_impl.ai_client.get_openai_key", lambda _: "")
     with pytest.raises(MissingOpenAIKeyError):
         AIClientImpl(subject="user")
-

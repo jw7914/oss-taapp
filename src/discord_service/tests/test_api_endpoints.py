@@ -109,7 +109,7 @@ def test_delete_message_various_responses() -> None:
 
     main.app.state.client = SimpleNamespace(_http_client=OtherHTTP())
     r5 = client.delete("/channels/c1/messages/m1")
-    assert r5.status_code == HTTPStatus.INTERNAL_SERVER_ERROR 
+    assert r5.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 def test_serialize_helpers_handle_alternate_attrs() -> None:

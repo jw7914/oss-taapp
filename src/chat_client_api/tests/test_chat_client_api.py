@@ -61,12 +61,14 @@ def test_client_get_message() -> None:
 
     # ACT
     retrieved_message = mock_client.get_message(
-        channel_id="channel_456", message_id="specific_msg_id",
+        channel_id="channel_456",
+        message_id="specific_msg_id",
     )
 
     # ASSERT
     mock_client.get_message.assert_called_once_with(
-        channel_id="channel_456", message_id="specific_msg_id",
+        channel_id="channel_456",
+        message_id="specific_msg_id",
     )
     assert retrieved_message.message_id == "specific_msg_id"
     assert retrieved_message.channel_id == "channel_456"
@@ -87,6 +89,7 @@ def test_client_delete_message() -> None:
 
     # ASSERT
     mock_client.delete_message.assert_called_once_with(
-        channel_id="channel_789", message_id="msg_to_delete",
+        channel_id="channel_789",
+        message_id="msg_to_delete",
     )
     assert success is True

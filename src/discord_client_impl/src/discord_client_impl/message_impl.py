@@ -114,9 +114,7 @@ class DiscordChannel(ChatChannel):
         recipients = self._raw_data.get("recipients")
         if isinstance(recipients, list):
             if recipients:  # Non-empty recipient list
-                usernames = [
-                    r.get("username", "Unknown") for r in recipients if isinstance(r, dict)
-                ]
+                usernames = [r.get("username", "Unknown") for r in recipients if isinstance(r, dict)]
                 return f"DM: {', '.join(usernames)}" if usernames else "Direct Message"
             # Empty recipient list for DM
             return "Direct Message"

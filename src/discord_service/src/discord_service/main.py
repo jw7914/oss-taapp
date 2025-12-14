@@ -11,7 +11,7 @@ from discord_client_impl.discord_impl import DiscordClient, DiscordGateway
 from discord_client_impl.message_impl import DiscordMessage, DiscordChannel
 
 import os
-        
+
 
 async def listen_for_messages() -> None:
     """Listen for new messages in real-time via Discord Gateway.
@@ -27,10 +27,10 @@ async def listen_for_messages() -> None:
         def on_message_create(data: dict[str, Any]) -> None:
             print(f"Message from {data['author']['username']}: {data['content']}")
 
-            for mention in data['mentions']:
-                if app.state.client.client_id in mention['id']:
+            for mention in data["mentions"]:
+                if app.state.client.client_id in mention["id"]:
                     process_message(data)
-            
+
         gateway.subscribe("MESSAGE_CREATE", on_message_create)
         await gateway.start()
     except asyncio.CancelledError:
@@ -38,11 +38,10 @@ async def listen_for_messages() -> None:
     except Exception as e:
         print(f"Gateway error: {e}")
 
-def process_message(data: dict[str, Any]) -> None:
-     """If the discord bot is pinged the message will be processed
-    """
-     app.state.client.send_message(recipient_id=data["author"]["id"], content=data["content"])
 
+def process_message(data: dict[str, Any]) -> None:
+    """If the discord bot is pinged the message will be processed"""
+    app.state.client.send_message(recipient_id=data["author"]["id"], content=data["content"])
 
 
 @asynccontextmanager
@@ -51,9 +50,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("Starting Discord service...")
     task = asyncio.create_task(listen_for_messages())
     app.state.gateway_task = task
-    
+
     yield  # Application runs here
-    
+
     print("Shutting down Discord service...")
     if hasattr(app.state, "gateway_task"):
         app.state.gateway_task.cancel()
@@ -70,6 +69,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
 
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
@@ -110,7 +110,6 @@ async def auth_middleware(request: Request, call_next: Callable[[Request], Await
                 )
 
     return await call_next(request)
-
 
 
 @app.get("/", tags=["General"])
@@ -379,9 +378,7 @@ def get_channels() -> JSONResponse:
     try:
         channels = app.state.client.get_channels()
         serialized = [serialize_channel(ch) for ch in channels]
-        return JSONResponse(
-            status_code=status.HTTP_200_OK, content={"channels": serialized, "status": "success"}
-        )
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"channels": serialized, "status": "success"})
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
