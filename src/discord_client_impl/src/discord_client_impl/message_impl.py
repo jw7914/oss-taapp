@@ -146,7 +146,7 @@ class DiscordChannel(ChatChannel):
             return 0
 
 
-def get_chat_message_impl(raw_data: dict[str, Any]) -> message.ChatMessage:
+def get_chat_message_impl(msg_id: str, raw_data: dict[str, Any]) -> message.ChatMessage:  # noqa: ARG001
     """Return an instance of the concrete DiscordMessage implementation."""
     return DiscordMessage(raw_data=raw_data)
 

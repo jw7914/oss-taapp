@@ -1,6 +1,7 @@
 """Message contract - Core message representation."""
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class ChatMessage(ABC):
@@ -77,12 +78,12 @@ class ChatChannel(ABC):
         raise NotImplementedError
 
 
-def get_message(msg_id: str, raw_data: str) -> ChatMessage:
+def get_message(msg_id: str, raw_data: dict[str, Any]) -> ChatMessage:
     """Return an instance of a Message.
 
     Args:
         msg_id (str): The unique identifier for the message.
-        raw_data (str): The raw data used to construct the message.
+        raw_data (dict[str, Any]): The raw data used to construct the message.
 
     Returns:
     Message: An instance conforming to the Message contract.

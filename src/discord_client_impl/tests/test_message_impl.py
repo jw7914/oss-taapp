@@ -29,7 +29,7 @@ class TestGetChatMessageImpl:
     def test_returns_discord_message_instance(self) -> None:
         """Test that factory returns a DiscordMessage instance."""
         raw_data = {"id": "msg_123", "content": "Hello"}
-        msg = get_chat_message_impl(raw_data)
+        msg = get_chat_message_impl("msg_123", raw_data)
         assert isinstance(msg, DiscordMessage)
 
 
