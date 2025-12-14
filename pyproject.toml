@@ -71,7 +71,16 @@ pythonpath = [
     "src/mail_client_api/src",
     "src/mail_client_service/src",
     "src/mail_client_service_api_client/src",
-    "src/service_client_adapter/src"
+    "src/service_client_adapter/src",
+    "src/discord_service",
+    "src/discord_service/src",
+    "src/openai_client_service",
+    "src/openai_client_service/src",
+    "src/openai_service_api/src",
+    "src/openai_client_impl/src",
+    "src/openai_adapter/src",
+    "src/chat_client_api/src",
+    "src/discord_client_impl/src"
 ]
 testpaths = ["tests", "src/*/tests"]
 addopts = ["--cov", "--cov-report=term-missing", "--import-mode=importlib"]

@@ -3,9 +3,9 @@
 from typing import Annotated, cast
 
 from fastapi import Cookie, Depends, Header, HTTPException, status
+from openai_service_api.client import AIClient
 
 from openai_client_impl import AIClientImpl  # type: ignore[attr-defined]
-from openai_service_api.src.openai_service_api.client import AIClient
 
 _SESSION_STORE: dict[str, dict[str, str]] = {}
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import UTC
 from datetime import datetime as real_datetime
+from datetime import timezone
 from types import SimpleNamespace
 from typing import Any
 
@@ -112,10 +112,8 @@ def _patch_time_and_uuid(monkeypatch: pytest.MonkeyPatch) -> None:
     """Ensure datetime/uuid helpers return deterministic data."""
 
     class DummyDateTimeModule:
-        UTC = UTC
-
         @staticmethod
-        def now(tz: UTC) -> real_datetime:
+        def now(tz: timezone) -> real_datetime:
             return real_datetime(2025, 1, 1, tzinfo=tz)
 
     monkeypatch.setattr("openai_client_impl.ai_client.datetime", DummyDateTimeModule)
