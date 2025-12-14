@@ -3,15 +3,53 @@ name = "final-service"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "SebL2", email = "68055840+SebL2@users.noreply.github.com" }
-]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "fastapi[standard]>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "chat-client-api",
+    "aiohttp>=3.9.0",
+    "discord-client-impl",
+    "openai-client-impl",
+    "prometheus-fastapi-instrumentator>=6.1.0",
+]
 
-[project.scripts]
-final-service = "final_service:main"
+[tool.uv.sources]
+chat-client-api = { workspace = true }
+discord-client-impl = { workspace = true }
+openai-client-impl = { workspace = true }
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "httpx>=0.25.0",
+    "pytest-asyncio>=0.21.0",
+    "mypy>=1.17.0",
+    "ruff>=0.12.7",
+]
 
 [build-system]
-requires = ["uv_build>=0.8.17,<0.9.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.build]
+directory = "dist"
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/final_service"]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "src"]
+testpaths = ["tests"]
+addopts = ["--cov", "--cov-report=term-missing", "--import-mode=importlib"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*"]

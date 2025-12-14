@@ -131,6 +131,11 @@ async def auth_middleware(request: Request, call_next: Callable[[Request], Await
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=True, tags=["General"])
 
 
+@app.get("/", tags=["General"])
+def root() -> dict[str, str]:
+    return {"message": "Welcome to Discord-AI Client Service!"}
+
+
 @app.get("/login", tags=["Authentication"], summary="Get OAuth2 Authorization URL")
 def login(scopes: str | None = Query(None, description="Optional space-separated scopes override")) -> Response:
     if getattr(app.state, "auth_in_progress", False):
@@ -192,3 +197,17 @@ def auth_callback(code: str | None = Query(None, description="Authorization code
     finally:
         app.state.auth_in_progress = False
 
+@app.get("/user", tags=["User"], summary="Get current user info")
+def get_current_user() -> JSONResponse:
+    try:
+        user = app.state.client.get_current_user()
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"user": user, "status": "success"})
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "Failed to get user", "message": str(e), "status": "error"},
+        )
+
+@app.get("/health", tags=["General"], summary="Health check")
+def health() -> JSONResponse:
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})

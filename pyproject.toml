@@ -31,6 +31,9 @@ members = [
   "src/service_client_adapter",
   "src/chat_client_api",
   "src/discord_client_impl",
+  "src/openai_service_api",
+  "src/openai_client_impl",
+  "src/final_service"
 ]
 
 
@@ -50,11 +53,7 @@ per-file-ignores = { "**/test_*.py" = ["TRY300", "BLE001", "ANN401", "SLF001", "
 [tool.mypy]
 strict = true
 explicit_package_bases = true # Required for src layout
-<<<<<<< HEAD
-mypy_path = ["src/gmail_client_impl/src", "src/mail_client_api/src","src/mail_client_service/src","src/service_client_adapter/src","src/mail_client_service_api_client/src","src/chat_client_api/src","src/discord_client_impl/src"]  
-=======
 mypy_path = ["src/gmail_client_impl/src", "src/mail_client_api/src","src/mail_client_service/src","src/service_client_adapter/src","src/mail_client_service_api_client/src","src/chat_client_api/src"]  
->>>>>>> a373b17 (Designed and implemented core chat client API)
 ignore_missing_imports = false
 warn_unused_ignores = false
 
