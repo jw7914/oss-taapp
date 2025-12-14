@@ -9,12 +9,9 @@ import asyncio
 import json
 import logging
 import os
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
-from typing import Any, ClassVar
-
-from collections.abc import Iterator, Callable
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 
 import aiohttp
 import httpx
@@ -92,13 +89,11 @@ class DiscordGateway:
 
 
     async def _identify(self) -> None:
-        # GUILDS (1) + GUILD_MESSAGES (512) + MESSAGE_CONTENT (32768) = 33281
-        intents = 1 | 512 | 32768
         payload = {
             "op": 2,
             "d": {
                 "token": self.token,
-                "intents": intents, 
+                "intents": 513,  # GUILDS + GUILD_MESSAGES
                 "properties": {"os": "linux", "browser": "custom_bot", "device": "custom_bot"},
             },
         }
@@ -359,8 +354,6 @@ class DiscordClient(ChatClient):
         response.raise_for_status()
 
         message_data_list = response.json()
-        logger.debug(f"get_messages raw response ({len(message_data_list)} messages): {message_data_list}")
-        
         if not isinstance(message_data_list, list):
             logger.warning(
                 "Expected a list from /channels/.../messages, got %s",
@@ -413,7 +406,6 @@ class DiscordClient(ChatClient):
         try:
             for msg in self.get_messages(channel_id=channel_id, limit=100):
                 if msg.message_id == message_id:
-                    logger.debug(f"Found message! Content: {repr(msg.content)}")
                     return msg
         except httpx.HTTPError as exc:
             # Log per-channel failures so we can diagnose network/API issues

@@ -6,15 +6,12 @@ from typing import Any, AsyncGenerator, Callable, Awaitable
 import asyncio
 from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse, Response, RedirectResponse
-from prometheus_fastapi_instrumentator import Instrumentator
-
 import discord_client_impl  # noqa: F401
 from discord_client_impl.discord_impl import DiscordClient, DiscordGateway
 from discord_client_impl.message_impl import DiscordMessage, DiscordChannel
 
-from prometheus_fastapi_instrumentator import Instrumentator
 import os
-
+        
 
 async def listen_for_messages() -> None:
     """Listen for new messages in real-time via Discord Gateway.
@@ -115,8 +112,6 @@ async def auth_middleware(request: Request, call_next: Callable[[Request], Await
     return await call_next(request)
 
 
-# Expose Prometheus metrics and show the endpoint in the OpenAPI docs under the General tag.
-Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=True, tags=["General"])
 
 @app.get("/", tags=["General"])
 def root() -> dict[str, str]:
