@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "task-client-adapter"
+version = "0.1.0"
+description = "Adapter for wrapping auto-generated task client service client"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "task-client-api",
+    "task_client_service_client",
+    "httpx>=0.23.0,<0.29.0",
+    "attrs>=22.2.0",
+    "python-dateutil>=2.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+  "e2e: end-to-end tests that hit the real service/Gmail"
+]
+# Optional: skip E2E by default in regular runs
+# addopts = "-m 'not e2e'"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.uv.sources]
+task-client-api = { workspace = true }
+task_client_service_client = { workspace = true }

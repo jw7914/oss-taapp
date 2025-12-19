@@ -1,0 +1,30 @@
+[project]
+name = "task-client-service-client"
+version = "0.1.0"
+description = "A client library for accessing Google Task Client Service"
+authors = []
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "httpx>=0.23.0,<0.29.0",
+    "attrs>=22.2.0",
+    "python-dateutil>=2.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.12.7",
+    "mypy>=1.17.0",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["F", "I", "UP"]
