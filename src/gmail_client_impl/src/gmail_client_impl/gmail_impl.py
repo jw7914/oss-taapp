@@ -262,7 +262,6 @@ class GmailClient(mail_client_api.Client):
 
         except (HttpError, OSError, ValueError) as e:
             self.logger.warning("Could not retrieve %s details before deletion: %s", message_id, e)
-
         try:
             (
                 self.service.users()  # type: ignore[attr-defined]

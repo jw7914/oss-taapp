@@ -1,0 +1,25 @@
+[project]
+name = "openai-adapter"
+version = "0.1.0"
+description = "HTTP adapter for the OpenAI Client Service"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.4.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["openai_adapter"]
+
+[tool.setuptools.package-data]
+openai_adapter = ["py.typed"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
