@@ -61,11 +61,18 @@ def process_message(data: dict[str, Any]) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage application lifespan: startup and shutdown."""
-    print("Starting Discord service...")
-    # Ensure database directory and tables exist before background tasks run
+    print("Starting Discord and Google services...")
     init_db()
-    task = asyncio.create_task(listen_for_messages())
-    app.state.gateway_task = task
+    # Start Discord listener
+    discord_task = asyncio.create_task(listen_for_messages())
+    app.state.gateway_task = discord_task
+    # Start Google client
+    try:
+        app.state.google_client = GTaskClient(interactive=False)
+    except Exception as e:
+        import logging
+        logging.exception("Failed to instantiate GTaskClient")
+        app.state.google_client = None  # Optionally handle as needed
 
     yield  # Application runs here
 
@@ -76,7 +83,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             await app.state.gateway_task
         except asyncio.CancelledError:
             pass
-
 
 # Create app with lifespan (only once)
 app = FastAPI(
@@ -137,7 +143,7 @@ def root() -> dict[str, str]:
     return {"message": "Welcome to Discord-AI Client Service!"}
 
 
-@app.get("/login", tags=["Authentication"], summary="Get OAuth2 Authorization URL")
+@app.get("/login", tags=["Authentication"], summary="Get OAuth2 Discord Authorization URL")
 def login(scopes: str | None = Query(None, description="Optional space-separated scopes override")) -> Response:
     if getattr(app.state, "auth_in_progress", False):
         raise HTTPException(
@@ -220,16 +226,7 @@ def health() -> JSONResponse:
 @app.get("/tasklists", tags=["Tasks"], summary="List all Google Tasklists")
 def list_google_tasklists():
     try:
-        client = GTaskClient(interactive=False)
-    except Exception as e:
-        import logging
-        logging.exception("Failed to instantiate GTaskClient")
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Failed to instantiate GTaskClient", "message": str(e), "status": "error"},
-        )
-    try:
-        tasklists = client.list_tasklists()
+        tasklists = app.state.google_client.list_tasklists()
         # Convert each tasklist to a dict for JSON serialization
         serialized = [t.to_dict() if hasattr(t, "to_dict") else vars(t) for t in tasklists]
         return JSONResponse(
@@ -242,4 +239,21 @@ def list_google_tasklists():
         return JSONResponse(
             status_code=500,
             content={"error": "Failed to list tasklists", "message": str(e), "status": "error"},
+        )
+
+@app.get("/tasks", tags=["Tasks"], summary="List all tasks in a Google Tasklist")
+def list_google_tasks(tasklist_id: str = Query(..., description="Google Tasklist ID")):
+    try:
+        tasks = app.state.google_client.list_tasks(tasklist_id)
+        serialized = [t.to_dict() if hasattr(t, "to_dict") else vars(t) for t in tasks]
+        return JSONResponse(
+            status_code=200,
+            content={"tasks": serialized, "status": "success"},
+        )
+    except Exception as e:
+        import logging
+        logging.exception("Failed to list tasks")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to list tasks", "message": str(e), "status": "error"},
         )
