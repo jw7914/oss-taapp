@@ -14,6 +14,7 @@ from openai_client_impl.ai_client import AIClientImpl
 from openai_client_impl import set_openai_key
 from openai_client_impl import init_db
 from prometheus_fastapi_instrumentator import Instrumentator
+from gtask_client_impl.gtask_impl import GTaskClient
 
 import discord_client_impl  # noqa: F401
 
@@ -213,3 +214,32 @@ def get_current_user() -> JSONResponse:
 @app.get("/health", tags=["General"], summary="Health check")
 def health() -> JSONResponse:
     return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
+
+
+
+@app.get("/tasklists", tags=["Tasks"], summary="List all Google Tasklists")
+def list_google_tasklists():
+    try:
+        client = GTaskClient(interactive=False)
+    except Exception as e:
+        import logging
+        logging.exception("Failed to instantiate GTaskClient")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to instantiate GTaskClient", "message": str(e), "status": "error"},
+        )
+    try:
+        tasklists = client.list_tasklists()
+        # Convert each tasklist to a dict for JSON serialization
+        serialized = [t.to_dict() if hasattr(t, "to_dict") else vars(t) for t in tasklists]
+        return JSONResponse(
+            status_code=200,
+            content={"tasklists": serialized, "status": "success"},
+        )
+    except Exception as e:
+        import logging
+        logging.exception("Failed to list tasklists")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to list tasklists", "message": str(e), "status": "error"},
+        )

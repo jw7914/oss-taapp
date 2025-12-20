@@ -136,8 +136,13 @@ class OAuthManager:
 
         """
         # Check if the dependencies module is available
-        if importlib.util.find_spec("task_client_service.dependencies") is None:
+        try:
+            if importlib.util.find_spec("task_client_service.dependencies") is None:
+                return False
+        except (ModuleNotFoundError, ValueError):
             return False
+            # Module doesn't exist or invalid module path
+
 
         # Try to import the dependencies module
         try:

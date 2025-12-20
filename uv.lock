@@ -13,12 +13,14 @@ members = [
     "discord-client-impl",
     "final-service",
     "gmail-client-impl",
+    "gtask-client-impl",
     "mail-client-api",
     "mail-client-service",
     "mail-client-service-api-client",
     "open-source",
     "openai-client-impl",
     "service-client-adapter",
+    "task-client-api",
 ]
 
 [[package]]
@@ -679,6 +681,7 @@ dependencies = [
     { name = "chat-client-api" },
     { name = "discord-client-impl" },
     { name = "fastapi", extra = ["standard"] },
+    { name = "gtask-client-impl" },
     { name = "openai-client-impl" },
     { name = "prometheus-fastapi-instrumentator" },
     { name = "uvicorn", extra = ["standard"] },
@@ -700,6 +703,7 @@ requires-dist = [
     { name = "chat-client-api", editable = "src/chat_client_api" },
     { name = "discord-client-impl", editable = "src/discord_client_impl" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.104.0" },
+    { name = "gtask-client-impl", editable = "src/gtask_client_impl" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.25.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.17.0" },
     { name = "openai-client-impl", editable = "src/openai_client_impl" },
@@ -1015,6 +1019,38 @@ sdist = { url = "https://files.pythonhosted.org/packages/ec/d7/6c09dd7ce4c7837e4
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/b1/9ff6578d789a89812ff21e4e0f80ffae20a65d5dd84e7a17873fe3b365be/griffe-1.14.0-py3-none-any.whl", hash = "sha256:0e9d52832cccf0f7188cfe585ba962d2674b241c01916d780925df34873bceb0", size = 144439, upload-time = "2025-09-05T15:02:27.511Z" },
 ]
+
+[[package]]
+name = "gtask-client-impl"
+version = "0.1.0"
+source = { editable = "src/gtask_client_impl" }
+dependencies = [
+    { name = "dotenv" },
+    { name = "google-api-python-client" },
+    { name = "google-auth" },
+    { name = "google-auth-oauthlib" },
+    { name = "requests" },
+    { name = "task-client-api" },
+]
+
+[package.optional-dependencies]
+test = [
+    { name = "pytest" },
+    { name = "pytest-mock" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "dotenv", specifier = ">=0.9.9" },
+    { name = "google-api-python-client", specifier = ">=2.177.0" },
+    { name = "google-auth", specifier = ">=2.40.3" },
+    { name = "google-auth-oauthlib", specifier = ">=1.2.2" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0.0" },
+    { name = "pytest-mock", marker = "extra == 'test'", specifier = ">=3.10.0" },
+    { name = "requests" },
+    { name = "task-client-api", editable = "src/task_client_api" },
+]
+provides-extras = ["test"]
 
 [[package]]
 name = "h11"
@@ -2553,6 +2589,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/a7/a5/d6f429d43394057b6
 wheels = [
     { url = "https://files.pythonhosted.org/packages/be/72/2db2f49247d0a18b4f1bb9a5a39a0162869acf235f3a96418363947b3d46/starlette-0.48.0-py3-none-any.whl", hash = "sha256:0764ca97b097582558ecb498132ed0c7d942f233f365b86ba37770e026510659", size = 73736, upload-time = "2025-09-13T08:41:03.869Z" },
 ]
+
+[[package]]
+name = "task-client-api"
+version = "0.1.0"
+source = { editable = "src/task_client_api" }
 
 [[package]]
 name = "tomli"

@@ -12,12 +12,14 @@ dependencies = [
     "discord-client-impl",
     "openai-client-impl",
     "prometheus-fastapi-instrumentator>=6.1.0",
+    "gtask-client-impl",
 ]
 
 [tool.uv.sources]
 chat-client-api = { workspace = true }
 discord-client-impl = { workspace = true }
 openai-client-impl = { workspace = true }
+gtask-client-impl = { workspace = true }
 
 [project.optional-dependencies]
 dev = [
