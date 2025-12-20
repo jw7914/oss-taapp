@@ -66,7 +66,7 @@ def get_task_client(request: Request) -> Client:
         if "Failed to obtain credentials" in error_msg or "credentials" in error_msg.lower():
             logger.info(
                 "No credentials found. Attempting to initialize client with interactive=True "
-                "to trigger authentication flow."
+                "to trigger authentication flow.",
             )
             try:
                 # This will trigger the OAuth flow automatically

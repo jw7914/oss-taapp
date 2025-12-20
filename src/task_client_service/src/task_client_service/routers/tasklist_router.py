@@ -51,8 +51,8 @@ async def insert_tasklist(
             examples=[
                 {
                     "title": "My New Task List",
-                }
-            ]
+                },
+            ],
         ),
     ],
 ) -> dict[str, str]:
@@ -104,7 +104,7 @@ async def delete_tasklist(
     else:
         if not success:
             raise HTTPException(
-                status_code=500, detail=f"Failed to delete tasklist '{tasklist_id}'"
+                status_code=500, detail=f"Failed to delete tasklist '{tasklist_id}'",
             )
 
         logger.info("Successfully deleted tasklist with ID: %s", tasklist_id)

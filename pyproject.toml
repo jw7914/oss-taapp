@@ -33,9 +33,14 @@ members = [
   "src/discord_client_impl",
   "src/openai_service_api",
   "src/openai_client_impl",
-  "src/final_service",
-  "src/gtask_client_impl",
+  "src/tickets_api",
+  "src/tickets_client_impl",
   "src/task_client_api",
+  "src/task_client_adapter",
+  "src/task_client_service",
+  "src/task_client_service_client",
+  "src/gtask_client_impl",
+  "src/final_service",
 ]
 
 

@@ -11,6 +11,7 @@ dependencies = [
     "aiohttp>=3.9.0",
     "discord-client-impl",
     "openai-client-impl",
+    "tickets-client-impl",
     "prometheus-fastapi-instrumentator>=6.1.0",
     "gtask-client-impl",
 ]
@@ -19,6 +20,7 @@ dependencies = [
 chat-client-api = { workspace = true }
 discord-client-impl = { workspace = true }
 openai-client-impl = { workspace = true }
+tickets-client-impl = { workspace = true }
 gtask-client-impl = { workspace = true }
 
 [project.optional-dependencies]

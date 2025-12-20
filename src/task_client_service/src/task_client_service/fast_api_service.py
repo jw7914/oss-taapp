@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         except RuntimeError as e:
             # If credentials aren't available, that's okay - client will be initialized lazily
             logger.info(
-                "Task client not initialized during startup (will be initialized lazily): %s", e
+                "Task client not initialized during startup (will be initialized lazily): %s", e,
             )
             app.state.task_client = None
         yield

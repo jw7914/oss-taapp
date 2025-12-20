@@ -155,7 +155,7 @@ def _test_update_ticket_title(client: TicketsClient, ticket_id: str) -> str | No
     logger.info("\n[7] Updating ticket title...")
     try:
         updated_ticket = client.update_ticket(
-            ticket_id=ticket_id, title="Test Ticket - Updated Title"
+            ticket_id=ticket_id, title="Test Ticket - Updated Title",
         )
         logger.info("✓ Ticket title updated successfully")
         logger.info("  New Title: %s", updated_ticket.title)

@@ -92,8 +92,8 @@ async def insert_task(
                     "notes": "This is a new task",
                     "status": "needsAction",
                     "due": "2025-11-15T00:00:00.000Z",
-                }
-            ]
+                },
+            ],
         ),
     ],
 ) -> dict[str, str | bool | None]:

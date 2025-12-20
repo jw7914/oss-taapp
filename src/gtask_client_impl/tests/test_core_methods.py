@@ -72,7 +72,7 @@ class TestGTaskClientTaskOperations:
         self.mock_service.tasks.return_value = mock_tasks
         mock_tasks.get.return_value = mock_get
         mock_get.execute.side_effect = HttpError(
-            Mock(status=404, reason="Not Found"), b"Task not found"
+            Mock(status=404, reason="Not Found"), b"Task not found",
         )
 
         # ACT & ASSERT

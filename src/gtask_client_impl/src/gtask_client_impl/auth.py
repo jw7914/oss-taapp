@@ -173,40 +173,41 @@ class OAuthManager:
         fall back to environment variables, as env vars are shared across all users.
         """
         self.logger.info(
-            "_get_non_interactive_credentials: Starting non-interactive credential retrieval"
+            "_get_non_interactive_credentials: Starting non-interactive credential retrieval",
         )
 
         # Check if we're in FastAPI service context
         in_fastapi_context = self._is_in_fastapi_context()
         self.logger.info(
-            "_get_non_interactive_credentials: Running in FastAPI context: %s", in_fastapi_context
+            "_get_non_interactive_credentials: Running in FastAPI context: %s", in_fastapi_context,
         )
 
         # First, try to get session credentials (preferred for web requests)
         self.logger.info(
-            "_get_non_interactive_credentials: Attempting to get session credentials first"
+            "_get_non_interactive_credentials: Attempting to get session credentials first",
         )
         try:
             creds = self._get_session_credentials()
             if creds and creds.valid:
                 self.logger.info(
                     "_get_non_interactive_credentials: Successfully obtained "
-                    "valid credentials from session"
+                    "valid credentials from session",
                 )
                 return creds
             if creds:
                 self.logger.info(
-                    "_get_non_interactive_credentials: Got session credentials but they are invalid"
+                    "_get_non_interactive_credentials: Got session credentials "
+                    "but they are invalid",
                 )
             else:
                 self.logger.info("_get_non_interactive_credentials: No session credentials found")
         except RequestException as e:
             self.logger.info(
-                "_get_non_interactive_credentials: Could not get session credentials: %s", e
+                "_get_non_interactive_credentials: Could not get session credentials: %s", e,
             )
         except (AttributeError, ImportError, RuntimeError, OSError) as e:
             self.logger.info(
-                "_get_non_interactive_credentials: Exception getting session credentials: %s", e
+                "_get_non_interactive_credentials: Exception getting session credentials: %s", e,
             )
 
         # If we're in FastAPI context, check if env fallback is allowed
@@ -217,30 +218,30 @@ class OAuthManager:
                 self.logger.info(
                     """_get_non_interactive_credentials:
                     In FastAPI context, not falling back to env. """
-                    "User must authenticate via /auth/login"
+                    "User must authenticate via /auth/login",
                 )
                 return None
             self.logger.info(
                 """_get_non_interactive_credentials:
                 In FastAPI context but TASKS_ALLOW_ENV_IN_SERVICE=true, """
-                "allowing env fallback"
+                "allowing env fallback",
             )
 
         # Fall back to environment variables (only for non-FastAPI contexts)
         self.logger.info(
-            "_get_non_interactive_credentials: Not in FastAPI context, falling back to env"
+            "_get_non_interactive_credentials: Not in FastAPI context, falling back to env",
         )
         creds = self._auth_from_env(interactive=False)
         self.logger.info(
-            "_get_non_interactive_credentials: _auth_from_env returned: %s", creds is not None
+            "_get_non_interactive_credentials: _auth_from_env returned: %s", creds is not None,
         )
         if creds:
             self.logger.info(
-                "_get_non_interactive_credentials: Successfully obtained credentials from env"
+                "_get_non_interactive_credentials: Successfully obtained credentials from env",
             )
         else:
             self.logger.info(
-                "_get_non_interactive_credentials: No credentials found in env or session"
+                "_get_non_interactive_credentials: No credentials found in env or session",
             )
         return creds
 
@@ -261,7 +262,7 @@ class OAuthManager:
                 self.logger.info(
                     """_get_interactive_credentials:
                     In FastAPI context but TASKS_ALLOW_ENV_IN_SERVICE=true, """
-                    "allowing env fallback"
+                    "allowing env fallback",
                 )
                 creds = self._auth_from_env(interactive=True)
                 if creds:
@@ -273,7 +274,7 @@ class OAuthManager:
         service_available = self._check_service_availability()
 
         self._validate_interactive_auth_state(
-            client_id, client_secret, refresh_token, service_available=service_available
+            client_id, client_secret, refresh_token, service_available=service_available,
         )
 
         if service_available:
@@ -326,7 +327,7 @@ class OAuthManager:
         return creds
 
     def _get_service_unavailable_error_msg(
-        self, client_id: str | None, client_secret: str | None
+        self, client_id: str | None, client_secret: str | None,
     ) -> str:
         """Get error message when service is unavailable."""
         if not client_id or not client_secret:
@@ -368,10 +369,10 @@ class OAuthManager:
             self.logger.info("_refresh_credentials_if_needed: Successfully refreshed credentials")
         except (GoogleAuthError, RefreshError, OSError, ValueError) as e:
             self.logger.warning(
-                "_refresh_credentials_if_needed: Failed to refresh credentials: %s", e
+                "_refresh_credentials_if_needed: Failed to refresh credentials: %s", e,
             )
             self.logger.info(
-                "_refresh_credentials_if_needed: Attempting to get session credentials as fallback"
+                "_refresh_credentials_if_needed: Attempting to get session credentials as fallback",
             )
             creds = self._get_session_credentials()
             if not creds or not creds.valid:
@@ -379,7 +380,7 @@ class OAuthManager:
                 self.logger.exception("_refresh_credentials_if_needed: %s", msg)
                 raise RuntimeError(msg) from e
             self.logger.info(
-                "_refresh_credentials_if_needed: Successfully obtained session credentials"
+                "_refresh_credentials_if_needed: Successfully obtained session credentials",
             )
 
         return creds
@@ -406,7 +407,7 @@ class OAuthManager:
         # Check if current_request is available
         if not hasattr(deps_module, "current_request"):
             self.logger.info(
-                "_get_fastapi_request: current_request not found in dependencies module"
+                "_get_fastapi_request: current_request not found in dependencies module",
             )
             return None
 
@@ -464,7 +465,7 @@ class OAuthManager:
             try:
                 creds_data = json.loads(credentials_json)
                 self.logger.info(
-                    "_get_creds_data_from_session: Found credentials in session, setting app.state"
+                    "_get_creds_data_from_session: Found credentials in session, setting app.state",
                 )
                 # Also set it in app.state for future use
                 request.app.state.current_session_creds = creds_data
@@ -488,7 +489,7 @@ class OAuthManager:
 
         """
         self.logger.info(
-            "_get_session_credentials: Attempting to retrieve credentials from FastAPI context"
+            "_get_session_credentials: Attempting to retrieve credentials from FastAPI context",
         )
 
         request = self._get_fastapi_request()
@@ -505,7 +506,7 @@ class OAuthManager:
 
         if creds_data is None:
             self.logger.info(
-                "_get_session_credentials: No credentials found in app.state or session"
+                "_get_session_credentials: No credentials found in app.state or session",
             )
             return None
 
@@ -590,7 +591,7 @@ class OAuthManager:
                 webbrowser.open(login_url)
             except (OSError, RuntimeError) as e:
                 self.logger.warning(
-                    "Failed to open browser: %s. Please visit %s manually", e, login_url
+                    "Failed to open browser: %s. Please visit %s manually", e, login_url,
                 )
                 # Continue anyway - user can open manually
 
@@ -712,7 +713,7 @@ class OAuthManager:
             return True
 
     def _load_credentials_from_file(
-        self, client_id: str | None, client_secret: str | None
+        self, client_id: str | None, client_secret: str | None,
     ) -> tuple[str | None, str | None]:
         """Load client credentials from credentials.json file.
 
@@ -754,7 +755,7 @@ class OAuthManager:
         return client_id, client_secret
 
     def _get_client_credentials(
-        self, client_id: str | None, client_secret: str | None
+        self, client_id: str | None, client_secret: str | None,
     ) -> tuple[str | None, str | None]:
         """Get client credentials from file or environment variables.
 
@@ -776,7 +777,7 @@ class OAuthManager:
         return client_id, client_secret
 
     def _run_interactive_flow_for_refresh_token(
-        self, client_id: str | None = None, client_secret: str | None = None
+        self, client_id: str | None = None, client_secret: str | None = None,
     ) -> Credentials | None:
         """Run interactive OAuth flow to obtain refresh token using direct Google API calls.
 
@@ -796,14 +797,14 @@ class OAuthManager:
         if not client_id or not client_secret:
             self.logger.warning(
                 "Cannot run interactive flow: credentials.json not found and "
-                "TASKS_CLIENT_ID/TASKS_CLIENT_SECRET not set in environment."
+                "TASKS_CLIENT_ID/TASKS_CLIENT_SECRET not set in environment.",
             )
             return None
 
         try:
             self.logger.info(
                 "Running interactive OAuth flow to obtain refresh token. "
-                "Please complete authentication in your browser."
+                "Please complete authentication in your browser.",
             )
             creds = self._run_manual_oauth_flow(client_id, client_secret)
         except (OSError, GoogleAuthError, ValueError, RequestException) as e:
@@ -932,7 +933,7 @@ class OAuthManager:
             )
 
     def _create_oauth_callback_handler(
-        self, oauth_state: dict[str, str | None]
+        self, oauth_state: dict[str, str | None],
     ) -> type[BaseHTTPRequestHandler]:
         """Create OAuth callback handler class.
 
@@ -987,7 +988,7 @@ class OAuthManager:
 
     @staticmethod
     def _send_error_response(
-        handler: BaseHTTPRequestHandler, error_msg: str | None, logger: logging.Logger
+        handler: BaseHTTPRequestHandler, error_msg: str | None, logger: logging.Logger,
     ) -> None:
         """Send error response."""
         handler.send_response(HTTPStatus.BAD_REQUEST)
@@ -1029,7 +1030,7 @@ class OAuthManager:
 
     @staticmethod
     def _handle_oauth_response(
-        handler: BaseHTTPRequestHandler, params: dict[str, str | None], logger: logging.Logger
+        handler: BaseHTTPRequestHandler, params: dict[str, str | None], logger: logging.Logger,
     ) -> None:
         """Handle OAuth callback response."""
         if params["error"]:
@@ -1182,23 +1183,23 @@ class OAuthManager:
             self.logger.info("_auth_from_env: Client ID and secret found but refresh token missing")
             if interactive:
                 self.logger.info(
-                    "_auth_from_env: interactive=True, attempting interactive OAuth flow"
+                    "_auth_from_env: interactive=True, attempting interactive OAuth flow",
                 )
                 creds = self._run_interactive_flow_for_refresh_token(client_id, client_secret)
                 if creds and creds.valid:
                     self.logger.info(
-                        "_auth_from_env: Successfully obtained credentials via interactive flow"
+                        "_auth_from_env: Successfully obtained credentials via interactive flow",
                     )
                     return creds
                 # If interactive flow failed, log and return None
                 self.logger.warning(
-                    "_auth_from_env: Interactive OAuth flow failed or was cancelled"
+                    "_auth_from_env: Interactive OAuth flow failed or was cancelled",
                 )
             else:
                 # Not interactive mode, can't get refresh token
                 self.logger.info(
                     "_auth_from_env: interactive=False, cannot obtain refresh token. "
-                    "Returning None."
+                    "Returning None.",
                 )
             return None
 
@@ -1215,7 +1216,7 @@ class OAuthManager:
 
         # Try to use the refresh token
         self.logger.info(
-            "_auth_from_env: All required env vars present, attempting to use refresh token"
+            "_auth_from_env: All required env vars present, attempting to use refresh token",
         )
         try:
             creds = Credentials(  # type: ignore[no-untyped-call]
@@ -1228,7 +1229,7 @@ class OAuthManager:
             )
             creds.refresh(Request())  # type: ignore[no-untyped-call]
             self.logger.info(
-                "_auth_from_env: Successfully authenticated using refresh token from env"
+                "_auth_from_env: Successfully authenticated using refresh token from env",
             )
             return creds  # noqa: TRY300
         except (GoogleAuthError, RefreshError, OSError, ValueError) as e:
@@ -1239,23 +1240,24 @@ class OAuthManager:
             # If interactive mode and refresh token failed, try interactive flow
             if interactive:
                 self.logger.info(
-                    "_auth_from_env: Refresh token invalid, attempting interactive OAuth flow"
+                    "_auth_from_env: Refresh token invalid, attempting interactive OAuth flow",
                 )
                 creds = self._run_interactive_flow_for_refresh_token(client_id, client_secret)
                 if creds and creds.valid:
                     self.logger.info(
-                        "_auth_from_env: Successfully obtained new credentials via interactive flow"
+                        "_auth_from_env: Successfully obtained new credentials "
+                        "via interactive flow",
                     )
                     return creds
                 self.logger.warning("_auth_from_env: Interactive OAuth flow also failed")
             else:
                 self.logger.info(
-                    "_auth_from_env: interactive=False, not attempting interactive flow"
+                    "_auth_from_env: interactive=False, not attempting interactive flow",
                 )
             return None
 
     def ensure_service_initialized(
-        self, service: Resource | None, build_service: Callable[[Credentials], Resource]
+        self, service: Resource | None, build_service: Callable[[Credentials], Resource],
     ) -> Resource:
         """Ensure the service is initialized with valid credentials.
 

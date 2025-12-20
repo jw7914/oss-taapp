@@ -371,7 +371,7 @@ class TestInteractiveCredentials:
             mock_check_service.return_value = True
             mock_get_via_service.side_effect = RuntimeError(
                 "Failed to obtain credentials through login flow. "
-                f"Please authenticate via {manager.SERVICE_BASE_URL}/auth/login"
+                f"Please authenticate via {manager.SERVICE_BASE_URL}/auth/login",
             )
 
             # ACT & ASSERT

@@ -174,7 +174,7 @@ class GTaskClient(task_client_api.Client):
                 tasks.append(
                     task.get_task(
                         raw_data=raw_data,
-                    )
+                    ),
                 )
         except (HttpError, OSError, ValueError) as e:
             self.logger.exception("Failed to list tasks for tasklist %s", tasklist_id)
